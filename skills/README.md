@@ -18,6 +18,7 @@ AI skills are instruction files you can load into Copilot, an agent, or any AI a
 | [project-brief.md](./project-brief.md) | Project Brief | Turns a rough idea or stakeholder request into a structured project brief. Asks clarifying questions to establish problem, goals, success criteria, scope, stakeholders, and risks, then delivers a decision-ready document. |
 | [ralph-loop.md](./ralph-loop.md) | RALPH Loop | A self-evaluating iterative execution pattern (Reason → Act → Look → Probe → Harden). Keeps the agent looping until all success criteria hit a configurable score threshold. Use for document generation, analysis, or any quality-sensitive task. |
 | [style-guidelines.md](./style-guidelines.md) | Brand Style Guide Template | A fill-in-the-blank template for turning any organization's brand guide into an AI skill. Covers color palette, typography, spacing tokens, and component styles. |
+| [uppababy-brand-review.md](./uppababy-brand-review.md) | UPPAbaby Brand Compliance Review | Reviews any content file (image, Word doc, Excel, PowerPoint, PDF, or text) against UPPAbaby brand guidelines. Produces a weighted scorecard across five categories — Voice & Tone, Visual Identity, Messaging Alignment, Photography, and Brand Consistency — plus a prioritized list of critical, major, and minor remediation steps. |
 
 ## How to Use a Skill
 

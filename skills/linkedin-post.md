@@ -1,376 +1,117 @@
 ---
-name: linkedin-demo-post
-description: Transform demo video transcripts into compelling LinkedIn posts in Zach Rosenfield's voice for SharePoint Knowledge Agent. Use this skill when the user needs to create LinkedIn content from demos, product announcements, or feature showcases - especially for SharePoint, Knowledge Agent, or M365 AI products. Triggers include requests to "create a LinkedIn post from this demo", "write social content for this feature", "help me announce this on LinkedIn", or when provided with demo transcripts, product demos, or feature walkthroughs that need to be turned into social media content.
+name: linkedin-post-writing
+description: Crafts high-performing LinkedIn posts from any topic, story, announcement, or idea. Use this skill when a user needs to write, draft, improve, or optimize a LinkedIn post — including personal stories, product announcements, thought leadership, professional milestones, or content repurposing. Triggers include requests to "write a LinkedIn post about", "help me announce this on LinkedIn", "make this sound better for LinkedIn", or when a user provides a transcript, article, achievement, or idea they want to share professionally.
 ---
 
-# LinkedIn Demo Post Creator
+# LinkedIn Post Writing Guide
 
-You are an expert at transforming demo video transcripts into compelling LinkedIn posts in Zach Rosenfield's authentic voice. Your goal is to create posts that educate, engage, and drive awareness of SharePoint Knowledge Agent features.
-
-## Before Creating Content
-
-**Required Inputs:**
-1. Demo video transcript
-2. Target feature or capability being demonstrated
-3. Post objective (announcement, feature showcase, use case, or tutorial)
-
-**Check for context:**
-- If `.claude/product-marketing-context.md` exists, read it first
-- Review recent LinkedIn posts for tone consistency
-- Understand the current product narrative arc
+This skill transforms any topic, story, or announcement into a compelling LinkedIn post that earns engagement. The goal is always a post that stops the scroll, delivers real value, and invites a response.
 
 ---
 
-## Zach's Voice Profile
+## What Makes a LinkedIn Post Perform
 
-### Tone Characteristics
-- **Professional but approachable** — Technical without being jargon-heavy
-- **User-value focused** — Leads with benefits, not features
-- **Story-driven** — Uses personal anecdotes and real scenarios
-- **Authentic** — Genuine excitement about what the product can do
-- **Educational** — Teaches while showcasing
+LinkedIn truncates posts after roughly 140 characters — everything after that is hidden behind a "see more" link. This makes the opening line the single most important element. Readers decide in under two seconds whether to keep reading.
 
-### Writing Patterns
-
-**Opening Hooks:**
-- Personal story ("Using the brand new #SharePoint Knowledge Agent I was able to...")
-- Direct announcement ("Announcing the Knowledge Agent in #SharePoint available today...")
-- Problem statement ("For years, the true power of content management tools has been locked...")
-- Feature reveal ("NEW KNOWLEDGE AGENT FEATURE: [Feature Name]!")
-
-**Structure:**
-1. Hook (personal story, announcement, or problem)
-2. Context (why this matters, what problem it solves)
-3. Solution (what the feature does)
-4. Examples (concrete use cases or demos)
-5. Call to action (try it, learn more, enable preview)
-6. Link
-7. Hashtags
-
-**Tone Elements:**
-- Uses emojis strategically (👍 ✨ 🧠 💡) but sparingly
-- Short paragraphs (1-3 sentences max)
-- Bullet points for features/capabilities
-- Natural language ("No more!", "Get the most from your files", "unleash the possible")
-- Casual contractions ("it's", "that's", "here's")
-
-### What to Avoid
-- ❌ Excessive emoji use
-- ❌ Generic corporate speak
-- ❌ Feature lists without context
-- ❌ Overselling or hype
-- ❌ Long dense paragraphs
-- ❌ Technical jargon without explanation
-- ❌ Passive voice
+Beyond the hook, high-performing posts share three traits: they are easy to scan, they offer a clear point of view, and they end with a reason to respond.
 
 ---
 
-## Post Type Templates
+## The Five-Part Structure
 
-### Type 1: Personal Use Case
-*Best for: Demonstrating real-world value through personal story*
+Every strong LinkedIn post follows this arc:
 
-**Structure:**
-```
-[Personal story opening with specific result]
+**1. Hook** — The opening line that earns the click. Make it specific, surprising, or immediately relevant. Never bury the lead with context-setting. The best hooks make a bold claim, ask a provocative question, or open a story mid-action.
 
-[Why you tried it / what problem you had]
+**2. Context** — One or two sentences that explain why this matters. Set up the problem, tension, or opportunity. Keep it brief — readers want the payoff, not the backstory.
 
-[How the feature solved it]
+**3. Core value** — The insight, lesson, announcement, or story. This is the substance. Use short paragraphs (one to two sentences each) with a blank line between them. Bullet points work well for lists of three or more items.
 
-Have you tried it yet? [Link]
+**4. Implication** — Why should the reader care? Zoom out to the broader lesson, trend, or takeaway. This is what makes the post shareable beyond your immediate network.
 
-#Hashtags
-```
-
-**Example (Recipe Organization):**
-```
-Using the brand new #SharePoint Knowledge Agent I was able to organize 
-my family's handwritten recipes – going from pictures to an organized 
-library of recipes I can sort through in just minutes!
-
-Have you tried it yet? https://lnkd.in/gGt6cWZi
-```
-
-### Type 2: Feature Announcement
-*Best for: Introducing new capabilities*
-
-**Structure:**
-```
-🟣 NEW KNOWLEDGE AGENT FEATURE: [Feature Name]!
-
-[Problem statement - what was hard before]
-
-[Solution - how the feature helps]
-
-[Specific example or demo reference]
-
-See it in action [context] or jumpstart your [goal] by enabling the 
-Knowledge Agent preview: [Link]
-
-#Hashtags
-```
-
-**Example (File Classification):**
-```
-🟣 NEW KNOWLEDGE AGENT FEATURE: AI File Classification!
-
-Before you can organize your files, you need to know what they are! The 
-Knowledge Agent can now classify your content with automatic category 
-suggestions based on library content (and before you ask—using your 
-existing corporate taxonomy is on deck)!
-
-See it in action on this folder of help-desk materials in the video below 
-or jumpstart your content organization journey today by enabling the 
-Knowledge Agent preview: https://lnkd.in/gGt6cWZi
-
-#sharepoint
-```
-
-### Type 3: Natural Language Demo
-*Best for: Showing AI interaction capabilities*
-
-**Structure:**
-```
-[Announcement of capability]
-
-[Brief explanation of what you can do]
-
-[Natural language examples in a list:]
-- Example query 1
-- Example query 2
-- Example query 3
-
-[Optional: Short demo reference]
-
-[Link]
-
-#Hashtags
-```
-
-**Example (Automatic Organization):**
-```
-The just announced #SharePoint Knowledge Agent can automatically 
-organize your files based on the content in your library! Try it today 
-to see the automatic suggestions or use it to organize your data with 
-natural language like:
-
-- Show me documents by product area
-- Send me an email when a contract for over $1000 is added
-- Sort these files by deadline date
-
-[Link]
-
-#SharePoint #Microsoft365 #KnowledgeAgent #Copilot #ContentManagement
-```
-
-### Type 4: Public Preview / Launch
-*Best for: Major announcements*
-
-**Structure:**
-```
-[Bold announcement]
-
-[Problem/opportunity statement - 2-3 sentences setting context]
-
-[Transition - "No more!" or "The future is here"]
-
-[Solution explanation with specific benefits]
-
-[Feature breakdown with emoji bullets:]
-🧠 Feature 1 with benefit
-⚡ Feature 2 with benefit
-📊 Feature 3 with benefit
-
-[Vision statement or impact]
-
-[CTA and link]
-
-#Hashtags
-```
-
-**Example (Public Preview):**
-```
-Announcing the Knowledge Agent in #SharePoint available today in Public Preview!
-
-For years, the true power of content management tools has been locked 
-behind deep expertise and complex manual processes. In this era of AI 
-ensuring your data is up to date, sorted, and of high quality is more 
-important than ever, but only a handful of users know how to tap into 
-those advanced features.
-
-No more! With Knowledge Agent, AI takes on the job of content manager to 
-organize, automate, curate your content—so every user can harness the full 
-potential of their content. Get the most from your files by describing 
-what you want to see and let the Knowledge Agent unleash the possible.
-
-Superpowers for all:
-🧠 Intelligent auto-filled metadata gives better answers and data pivots
-⚡ Effortless automation lets you describe what you need and AI will build 
-   the workflows and views to achieve your goals
-📊 Curation ensures content that's always ready for teammates, Copilot and 
-   custom agents to consume
-
-The future of content management is here—and it's finally accessible to 
-everyone. Get started optimizing your content with the Knowledge Agent!
-
-Learn more in the official launch blog 👉 https://lnkd.in/gKanyB-X
-
-#SharePoint #Microsoft365 #KnowledgeAgent #Copilot #ContentManagement
-```
+**5. Call to action** — Close with a question, invitation, or next step. Posts that end with a direct question get 20–40% higher engagement. Options include: asking for the reader's experience, directing them to a link, or prompting them to share the post with someone who needs it.
 
 ---
 
-## From Transcript to Post Workflow
+## Hook Formulas
 
-### Step 1: Extract Key Information
-From the demo transcript, identify:
-- **Core capability** — What is being demonstrated?
-- **User problem** — What pain point does this solve?
-- **Key moment** — Most impressive or "wow" moment in demo
-- **Specific examples** — Concrete use cases shown
-- **Business value** — Why does this matter?
+Choose the hook type that fits the content:
 
-### Step 2: Choose Post Type
-Based on the demo content:
-- Personal story angle → Type 1: Personal Use Case
-- New feature launch → Type 2: Feature Announcement  
-- AI interaction focus → Type 3: Natural Language Demo
-- Major milestone → Type 4: Public Preview/Launch
+**The result first** — Lead with the outcome, then explain how you got there. ("We tripled response rates. Here's what changed.")
 
-### Step 3: Craft the Hook
-**Hook Formula Options:**
-1. Personal story: "Using [feature], I was able to [specific impressive result]"
-2. New feature: "🟣 NEW KNOWLEDGE AGENT FEATURE: [Name]!"
-3. Question: "Have you tried [capability] yet?"
-4. Bold statement: "Announcing [feature] available today!"
-5. Problem: "For years, [pain point has existed]..."
+**The counterintuitive claim** — State something that challenges a common assumption. ("Most onboarding checklists make new hires worse at their job.")
 
-### Step 4: Build the Body
-- **Problem → Solution** — Set up why this matters before explaining what it does
-- **Show, don't just tell** — Use specific examples from the demo
-- **Keep it scannable** — Short paragraphs, bullet points for features
-- **Natural language** — Write like you're explaining to a colleague
+**The specific story** — Drop the reader into a scene. Use a number, a name, or a concrete detail. ("Last Tuesday, a five-minute conversation saved us three months of rework.")
 
-### Step 5: Close Strong
-- Clear CTA: "Try it today", "Enable the preview", "Learn more"
-- Link placement (typically in CTA line or comment for better reach)
-- Relevant hashtags: #SharePoint #Microsoft365 #KnowledgeAgent #Copilot
+**The direct question** — Ask something your audience is already wondering. ("Why do so many good ideas die in the first meeting?")
+
+**The bold announcement** — State the news clearly and immediately. ("We just launched [X]. Here's what it does and why it matters.")
 
 ---
 
-## Transcript Analysis Questions
+## Format Rules
 
-When provided with a demo transcript, analyze:
+**Length** — 150 to 300 words is the sweet spot for most posts. Text-only posts in the 1,300–1,800 character range tend to see peak reach. Going under 1,000 characters can lose up to 25% of potential engagement.
 
-1. **What is the main capability being shown?**
-   - In one sentence, what can users now do?
+**Paragraphs** — Maximum two sentences per paragraph. Always add a blank line between paragraphs. Dense text blocks lose readers immediately.
 
-2. **What problem does this solve?**
-   - What was hard/impossible before?
-   - Who experiences this pain?
+**Bullets** — Use them for lists of three or more. Do not use bullets for single items or as a substitute for proper sentences.
 
-3. **What's the "wow" moment?**
-   - What would make someone say "I need to try this"?
-   - What's the most impressive result shown?
+**Emojis** — Use sparingly (one to three per post maximum) and only where they add meaning or visual separation. Never use them as decoration.
 
-4. **What are the concrete examples?**
-   - Specific scenarios demonstrated
-   - Natural language queries used
-   - Results achieved
+**Hashtags** — Three to five relevant hashtags at the end of the post. Do not embed hashtags in the body text.
 
-5. **What's the business value?**
-   - Time saved
-   - Quality improved
-   - Capabilities unlocked
+**Links** — LinkedIn's algorithm deprioritizes posts with external links in the body. Either place the link in the first comment and reference it in the post ("link in comments"), or include it at the end after all substantive content.
 
-6. **What's the best post type for this demo?**
-   - Announcement, personal story, tutorial, feature showcase?
+---
+
+## Content Types and When to Use Each
+
+**Personal story** — Best for building trust and relatability. Leads with a specific moment, challenge, or realization. The most shareable format when the story has a transferable lesson.
+
+**Announcement** — Best for launches, milestones, or news. State the news in the first sentence, then explain what it means and why it matters. End with a clear next step.
+
+**Thought leadership** — Best for establishing expertise. Takes a clear position on a topic, backs it up with evidence or experience, and invites disagreement. Avoid hedging — a strong opinion performs better than a balanced both-sides take.
+
+**How-to or list** — Best for educational content. Use a numbered list or bullets. Front-load the most valuable item, not the most obvious one.
+
+**Repurposed content** — Best for extending the reach of existing work (an article, talk, or project). Extract the single most interesting insight and build the post around that, rather than summarizing the whole piece.
+
+---
+
+## Inputs to Gather
+
+Before writing, identify:
+
+- **The core message** — In one sentence, what is this post saying?
+- **The audience** — Who is this for? What do they already know, and what do they care about?
+- **The goal** — Awareness, engagement, driving traffic, building credibility, or recruiting?
+- **The angle** — Is this a story, an opinion, a lesson, or an announcement?
+- **Any supporting material** — Transcripts, articles, data, or talking points to draw from
+
+If the user has not provided a clear angle or audience, ask before writing. A post written for the wrong audience or with the wrong angle will need to be scrapped, not revised.
 
 ---
 
 ## Optimization Checklist
 
-Before finalizing the post:
+Before finalizing any post, verify:
 
-**Content:**
-- [ ] Hook is compelling and clear
-- [ ] Problem/context is relatable
-- [ ] Solution is explained simply
-- [ ] Examples are specific and concrete
-- [ ] CTA is clear and actionable
-
-**Voice:**
-- [ ] Tone is professional but approachable
-- [ ] Sounds like Zach (not generic AI)
-- [ ] Uses natural contractions and language
-- [ ] Balances enthusiasm with authenticity
-
-**Format:**
-- [ ] Paragraphs are 1-3 sentences
-- [ ] Bullet points used for feature lists
-- [ ] Emojis used sparingly (1-3 max)
-- [ ] Hashtags at end
-- [ ] Link included
-
-**Length:**
-- [ ] Total post is 150-300 words
-- [ ] Hook is under 25 words
-- [ ] Each paragraph stands alone
-
----
-
-## Example Transformations
-
-### Demo Input:
-"In this demo, I'll show you how Knowledge Agent can automatically tag your documents. I have a folder of contracts here. Watch as I click 'Analyze Library' and the AI suggests categories for each contract based on the content—vendor agreements, NDAs, service agreements. Now I can filter and find contracts instantly instead of opening each one."
-
-### Post Output (Type 2):
-```
-🟣 NEW KNOWLEDGE AGENT FEATURE: Smart Contract Classification!
-
-Tired of opening dozens of files just to find the right contract? The 
-Knowledge Agent now automatically categorizes your contracts based on 
-their actual content—not just filenames.
-
-Watch it analyze vendor agreements, NDAs, and service agreements in seconds, 
-then instantly filter to find exactly what you need.
-
-See it in action: [link]
-
-#SharePoint #KnowledgeAgent #ContentManagement
-```
-
----
-
-## Related Context
-
-- **Product positioning** — Knowledge Agent democratizes content management
-- **Key themes** — Automation, accessibility, AI-powered organization
-- **Audience** — M365 admins, knowledge workers, IT decision makers
-- **Competitive edge** — Enterprise-ready AI that works with existing content
-- **Vision** — Every user can be a content management expert
-
----
-
-## Task-Specific Questions
-
-When you provide a demo transcript, I'll ask:
-
-1. What's the primary goal of this post? (Awareness, education, activation)
-2. Is this part of a product launch or feature announcement?
-3. Are there specific talking points or messaging to include?
-4. Do you have a preferred post type, or should I recommend one?
-5. Should this link to a blog post, demo site, or product page?
+- The first line works as a standalone hook — would it make someone pause while scrolling?
+- No paragraph runs longer than two sentences
+- The post has a single, clear point of view — it is not trying to say three things at once
+- The call to action is specific, not generic ("What's your experience with this?" is better than "Let me know what you think")
+- Hashtags are at the end and limited to three to five
+- If there is an external link, it appears at the very end or is moved to the first comment
+- The post reads naturally out loud — if it sounds stiff, it will read stiff
 
 ---
 
 ## Output Format
 
-I will provide:
+For every post, deliver:
 
-1. **Recommended post type** with rationale
-2. **Draft post** in Zach's voice
-3. **Alternative hook options** (2-3 variations)
-4. **Suggested hashtags** based on content
-5. **Optimization notes** on what makes this post work
+1. **Draft post** — Ready to copy and paste, formatted with proper line breaks
+2. **Hook alternatives** — Two or three opening line variations for the user to choose from
+3. **One-line rationale** — Why this structure and angle was chosen for this content
+4. **Optional:** A suggested hashtag set and a note on where to place any links
