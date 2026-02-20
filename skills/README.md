@@ -8,7 +8,7 @@ AI skills are instruction files you can load into Copilot, an agent, or any AI a
 |---|---|---|
 | [linkedin-post.md](./linkedin-post.md) | LinkedIn Demo Post Creator | Transforms demo video transcripts into LinkedIn posts in Zach Rosenfield's voice. Covers four post types (personal use case, feature announcement, natural language demo, public preview) and includes a full workflow from transcript to published post. Tuned for SharePoint / Knowledge Agent content. |
 | [ralph-loop.md](./ralph-loop.md) | RALPH Loop | A self-evaluating iterative execution pattern (Reason → Act → Look → Probe → Harden). Keeps the agent looping until all success criteria hit a configurable score threshold, then stops. Use when a first-pass answer isn't good enough — document generation, data extraction, analysis, or any quality-sensitive task. |
-| [style-guidelines.md](./style-guidelines.md) | Catalyze Central Oregon Brand Style | Full brand style guide for Catalyze Central Oregon. Covers color palette, typography, spacing tokens, and component styles (buttons, cards, tables, badges, alerts). Load this skill whenever generating visual output, documents, or UI for that brand. |
+| [style-guidelines.md](./style-guidelines.md) | Brand Style Guide Template | A fill-in-the-blank template for turning any organization's brand guide into an AI skill. Covers color palette, typography, spacing tokens, and component styles (buttons, cards, tables, badges, alerts). Replace the placeholders with your brand values, then load the skill whenever generating visual output, documents, or UI. |
 
 ## How to Use a Skill
 
