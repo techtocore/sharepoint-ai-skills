@@ -1,0 +1,30 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets / credentials — never commit these
+*.env
+.env*
+appsettings.local.json
+secrets.json
+
+# Node (if any tooling is added later)
+node_modules/
+npm-debug.log*
+
+# Python (if any tooling is added later)
+__pycache__/
+*.py[cod]
+.venv/
+
+# Build / temp
+dist/
+*.tmp
+*.log
