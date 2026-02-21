@@ -8,7 +8,7 @@ The scenario throughout: building a session-submission tracking list for **ZachC
 
 ## Watch the Demo
 
-[![Build a SharePoint List 3 Ways with AI](https://img.youtube.com/vi/2coioZ8aK50/maxresdefault.jpg)](https://youtu.be/2coioZ8aK50)
+[![Build a SharePoint List 3 Ways with AI](./images/thumbnail.png)](https://youtu.be/2coioZ8aK50)
 
 ---
 
@@ -44,12 +44,21 @@ The [RALPH loop skill](../../skills/ralph-loop.md) drives iterative self-evaluat
 
 ---
 
+## Skills Used
+
+| Skill | Used In | Description |
+|-------|---------|-------------|
+| [ralph-loop.md](../../skills/ralph-loop.md) | Way 3 | Drives iterative self-evaluation — agent loops until quality criteria are met |
+| [forest-style.md](../../skills/forest-style.md) | Way 3 | Enforces the forest-style brand system on all visual output and list formatting |
+
+---
+
 ## What's in This Folder
 
 | File | Purpose |
 |------|---------|
 | `script.md` | The exact prompts used in each of the three approaches |
-| `style-definition.md` | The brand skill loaded for Way 3 — enforces forest-style visual standards |
+| `style-definition.md` | Local copy of the brand skill used during the demo recording |
 
 ---
 
@@ -57,4 +66,4 @@ The [RALPH loop skill](../../skills/ralph-loop.md) drives iterative self-evaluat
 
 - Microsoft 365 tenant with Copilot licenses
 - SharePoint site with agent enabled
-- For Way 3: `ralph-loop.md` and `style-definition.md` uploaded to the site's **Agent Assets > Skills** library
+- For Way 3: [`ralph-loop.md`](../../skills/ralph-loop.md) and [`forest-style.md`](../../skills/forest-style.md) uploaded to the site's **Agent Assets > Skills** library
