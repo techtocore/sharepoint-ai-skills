@@ -80,6 +80,25 @@ Not Found:         2  (1 internal estimate, 1 no corpus match)
 
 ---
 
+## SharePoint Setup
+
+Before running the demo, upload the included files to a SharePoint document library on your site. Put the brief at the root of the library and the corpus files inside a subfolder — this keeps the source documents organized and gives the Citation Finder a clean folder path to search against.
+
+![SharePoint library showing the brief at the root and corpus files in a subfolder](./library-setup.png)
+
+| File | Where to upload |
+|------|-----------------|
+| `Zava_Executive_Brief - Feb 2026.docx` | Root of the document library |
+| `Corpus_1_Market_Research_Report.docx` | Subfolder (e.g., `Feb2026 Backing Data`) |
+| `Corpus_2_Knowledge_Management_Study.docx` | Same subfolder |
+| `Corpus_3_Supply_Chain_AI_Report.docx` | Same subfolder |
+| `Corpus_4_Customer_Service_AI_Study.docx` | Same subfolder |
+| `Corpus_5_AI_Governance_Report.docx` | Same subfolder |
+
+When running Prompt 3, give the agent the URL of the subfolder as the corpus path — not the library root — so it searches only the backing data and not the brief itself.
+
+---
+
 ## What's in This Folder
 
 | File | Purpose |
@@ -88,6 +107,7 @@ Not Found:         2  (1 internal estimate, 1 no corpus match)
 | `assertion-list-creator.md` | Skill file — creates the SharePoint list infrastructure |
 | `assertion-extractor.md` | Skill file — extracts assertions from a document and writes list records |
 | `citation-finder.md` | Skill file — searches source corpus and populates the Citations column |
+| `zava citations demo files/` | Demo documents — the executive brief and five corpus files |
 
 ---
 
@@ -96,5 +116,4 @@ Not Found:         2  (1 internal estimate, 1 no corpus match)
 - Microsoft 365 tenant with Copilot licenses
 - SharePoint site with agent enabled
 - All three skill files uploaded to the site's **Agent Assets > Skills** library
-- The document to analyze accessible from SharePoint, OneDrive, or a local file path
-- A source document corpus (SharePoint folder, OneDrive library, or local directory) for the citation search
+- Demo files uploaded to the site per the library setup above
