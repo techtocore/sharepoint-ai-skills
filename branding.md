@@ -1,6 +1,6 @@
 # Forest-Style Brand Reference
 
-A quick-reference guide to the forest-style brand system. For the full AI-instructional version, see [`skills/forest-style.md`](./skills/forest-style.md).
+A quick-reference guide to the forest-style brand system. For the full AI-instructional version, see [`Skills/forest-style/SKILL.md`](./Skills/forest-style/SKILL.md).
 
 ---
 

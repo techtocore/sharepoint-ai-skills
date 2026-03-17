@@ -5,7 +5,7 @@
 | Path | Purpose |
 |------|---------|
 | `Skills/` | All AI skills live here. See `Skills/README.md` for the full index. |
-| `Skills/<skill-name>/` | Each skill lives in its own folder. The folder name must exactly match the `name` field in the skill's frontmatter. Contains `SKILL.md` and optionally `references/`, `scripts/`, and `assets/` subdirectories per the agentskills.io spec. |
+| `Skills/<skill-name>/` | Each skill lives in its own folder. The folder name must exactly match the `name` field in the skill's frontmatter. Contains `SKILL.md` and optionally `references/`, and `assets/` subdirectories per the agentskills.io spec. |
 | `Skills/<skill-name>/SKILL.md` | The skill definition file. Required YAML frontmatter (`name`, `description`) followed by skill instructions in Markdown. |
 | `demos/` | End-to-end demo setups. Each demo lives in its own subfolder and may include video recordings, scripts, and supporting assets. Not intended for direct reuse — reference and walkthrough material. |
 | `branding.md` | Quick-reference brand cheat sheet for the forest-style brand system. Human-readable; not a skill. For the AI-instructional version see `Skills/forest-style/SKILL.md`. |
@@ -49,6 +49,7 @@ Before creating or editing a skill, consult the official authoring guide:
 Key points:
 - Keep `SKILL.md` body under 500 lines
 - Descriptions must include what the skill does AND when to use it
+- Add examples of how the agent should respond when using the skill. Include sample prompts and the expected output for each of them. 
 - Be concise — only add context Claude doesn't already have
 - Use consistent terminology throughout
 - Avoid time-sensitive information

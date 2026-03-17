@@ -1,3 +1,8 @@
+---
+name: style-guidelines
+description: Provides a customizable brand style template for ensuring visual consistency across all outputs. Use when creating or reviewing visual output, documents, web content, presentations, tables, lists, or interface elements that must follow an organization's brand guidelines. Triggers include "apply brand styles", "make this match our brand", "style guide", or when outputs need consistent colors, typography, spacing, and voice.
+---
+
 # Brand Style Skill — Template
 
 Use this skill whenever creating any visual output, document, web content, presentation, table, list, or interface element for **[Your Organization]**. This skill ensures all outputs are visually consistent with the brand.
