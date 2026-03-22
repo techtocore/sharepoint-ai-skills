@@ -1,26 +1,8 @@
 #!/usr/bin/env node
-/**
- * runner.js — SharePoint AI Demo Runner
- *
- * Usage:
- *   node demos/tool/runner.js <script.md> [options]
- *
- * Options:
- *   --url <url>            Override the target URL from the script frontmatter
- *   --speed slow|normal|fast   Typing speed (default: normal)
- *   --screenshots <dir>    Directory to save screenshots (default: ./screenshots)
- *   --session <id>         Reuse an existing Playwriter session instead of creating one
- *   --dry-run              Parse the script and print steps without running anything
- */
-
 import { parseScript } from './parser.js';
 import { Player } from './player.js';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// ── Minimal arg parser (no external deps) ────────────────────────────────────
 function parseArgs(argv) {
   const args = { positional: [], flags: {} };
   for (let i = 0; i < argv.length; i++) {
@@ -52,6 +34,7 @@ Options:
   --speed slow|normal|fast  Typing speed  (default: normal)
   --screenshots <dir>     Directory for screenshots  (default: ./screenshots)
   --session <id>          Reuse an existing Playwriter session
+  --no-auto-pause         Don't pause after each AI prompt (use explicit <!-- wait --> instead)
   --dry-run               Print steps without executing
 
 Example:
@@ -59,8 +42,7 @@ Example:
 `);
 }
 
-// ── Step runner ───────────────────────────────────────────────────────────────
-async function runSteps(player, steps) {
+async function runSteps(player, steps, autoPause) {
   for (let i = 0; i < steps.length; i++) {
     const step = steps[i];
     const label = `[${i + 1}/${steps.length}]`;
@@ -74,6 +56,7 @@ async function runSteps(player, steps) {
       case 'type':
         console.log(`${label} type: "${step.text.slice(0, 60)}${step.text.length > 60 ? '…' : ''}"`);
         await player.typeInAI(step.text);
+        if (autoPause) await player.pause();
         break;
 
       case 'pause':
@@ -102,7 +85,6 @@ async function runSteps(player, steps) {
   }
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
   const { positional, flags } = parseArgs(process.argv.slice(2));
 
@@ -121,52 +103,45 @@ async function main() {
   }
 
   const { meta, steps } = parsed;
+  const autoPause = !flags['no-auto-pause'];
 
-  // Apply CLI overrides
-  if (flags.url) meta.url = flags.url;
-  if (flags.speed) meta.speed = flags.speed;
-  if (flags.screenshots) meta.screenshots = flags.screenshots;
+  const playerOptions = {
+    speed: flags.speed || meta.speed || 'normal',
+    selector: meta.selector || '',
+    screenshots: flags.screenshots || meta.screenshots || '',
+  };
 
-  // ── Dry run ──
   if (flags['dry-run']) {
     console.log(`\nScript: ${meta.title || scriptPath}`);
     if (meta.url) console.log(`URL: ${meta.url}`);
+    console.log(`Auto-pause after prompts: ${autoPause}`);
     console.log(`\nSteps (${steps.length}):\n`);
     steps.forEach((s, i) => {
       const detail =
-        s.type === 'type' ? `"${s.text.slice(0, 72)}${s.text.length > 72 ? '…' : ''}"` :
-        s.type === 'navigate' ? s.url :
-        s.type === 'wait' ? `${s.ms}ms` :
+        s.type === 'type'       ? `"${s.text.slice(0, 72)}${s.text.length > 72 ? '…' : ''}"` :
+        s.type === 'navigate'   ? s.url :
+        s.type === 'wait'       ? `${s.ms}ms` :
         s.type === 'screenshot' ? `"${s.caption}"` :
-        s.type === 'speed' ? s.value :
+        s.type === 'speed'      ? s.value :
         '';
-      console.log(`  ${String(i + 1).padStart(2)}. ${s.type}${detail ? '  ' + detail : ''}`);
+      const autoTag = autoPause && s.type === 'type' ? ' + auto-pause' : '';
+      console.log(`  ${String(i + 1).padStart(2)}. ${s.type}${autoTag}${detail ? '  ' + detail : ''}`);
     });
     console.log('');
     return;
   }
 
-  // ── Live run ──
   console.log(`\n▶  ${meta.title || path.basename(scriptPath)}`);
   if (meta.url) console.log(`   ${meta.url}`);
-  console.log(`   ${steps.length} steps  |  speed: ${flags.speed || meta.speed || 'normal'}\n`);
+  console.log(`   ${steps.length} steps  |  speed: ${playerOptions.speed}  |  auto-pause: ${autoPause}\n`);
 
   let player;
   try {
     if (flags.session) {
       console.log(`[runner] Reusing session ${flags.session}`);
-      player = new Player({
-        sessionId: flags.session,
-        speed: flags.speed || meta.speed || 'normal',
-        selector: meta.selector || '',
-        screenshots: flags.screenshots || meta.screenshots || '',
-      });
+      player = new Player({ sessionId: flags.session, ...playerOptions });
     } else {
-      player = await Player.create({
-        speed: flags.speed || meta.speed || 'normal',
-        selector: meta.selector || '',
-        screenshots: flags.screenshots || meta.screenshots || '',
-      });
+      player = await Player.create(playerOptions);
     }
   } catch (err) {
     console.error(`\nFailed to start Playwriter session: ${err.message}`);
@@ -174,14 +149,12 @@ async function main() {
     process.exit(1);
   }
 
-  // Navigate to the starting URL if the script defines one and the first step
-  // isn't already a navigate directive
   if (meta.url && steps[0]?.type !== 'navigate') {
     await player.navigate(meta.url);
   }
 
   try {
-    await runSteps(player, steps);
+    await runSteps(player, steps, autoPause);
     console.log('\n✓  Demo complete.\n');
   } catch (err) {
     console.error(`\nError during demo: ${err.message}`);

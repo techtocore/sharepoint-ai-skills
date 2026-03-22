@@ -23,9 +23,7 @@ SUCCESS CRITERIA — score each 1–10, do not declare complete until all are 8 
 
 4. SAMPLE DATA — at least 8 realistic employees across different departments, with a mix of Pending, Approved, and Rejected requests. Dates should be plausible for the current year.
 
-<!-- pause -->
-
-<!-- comment: Wait for RALPH to finish — this may take a few minutes. Once it's done, navigate to the Team Calendar list. -->
+<!-- comment: The tool will auto-pause here — wait for RALPH to finish, then click ▶ Next. -->
 
 <!-- navigate: https://your-tenant.sharepoint.com/sites/your-site/Lists/TeamCalendar -->
 
@@ -43,9 +41,7 @@ SUCCESS CRITERIA — score each 1–10, do not declare complete until all are 8 
 
 3. SAMPLE DATA — at least 6 upcoming events of different types (holidays, team meetings, deadlines) spread across the next 3 months.
 
-<!-- pause -->
-
-<!-- comment: Navigate to the site home page to show the finished product -->
+<!-- comment: Auto-pause here — wait for RALPH to finish, then click ▶ Next to navigate home. -->
 
 <!-- navigate: https://your-tenant.sharepoint.com/sites/your-site -->
 

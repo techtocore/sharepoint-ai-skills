@@ -41,6 +41,7 @@ Options:
 | `--speed slow\|normal\|fast` | `normal` | Typing speed |
 | `--screenshots <dir>` | `./screenshots` | Where to save screenshots |
 | `--session <id>` | *(new)* | Reuse an existing Playwriter session |
+| `--no-auto-pause` | — | Disable the automatic ▶ Next pause after each AI prompt |
 | `--dry-run` | — | Print the parsed step list without running anything |
 
 **Tip:** Use `--dry-run` to review what the script will do before going live.
@@ -122,9 +123,14 @@ Add a note that I'll be at a family reunion and my backup is Jordan.
 
 ## How the pause button works
 
-When the runner hits a `<!-- pause -->` directive it injects a small floating **▶ Next** button in the bottom-right corner of your live Chrome tab. Click it to advance to the next step. The button removes itself automatically.
+The **▶ Next** button appears automatically in two situations:
 
-This means you can pace a live demo entirely from the browser — no switching focus to a terminal window.
+1. **After every AI prompt** — the tool types and submits your message, then pauses so you can watch the AI generate its response. Click ▶ Next when you're ready to continue.
+2. **At every `<!-- pause -->` directive** — for non-AI moments: navigation, explaining context, or section breaks.
+
+The button is injected directly into your live Chrome tab (bottom-right corner) and removes itself automatically after you click it. No need to switch focus to a terminal window.
+
+For pre-timed recordings without manual pausing, use `--no-auto-pause` and add `<!-- wait: Xs -->` between prompts instead.
 
 ---
 
