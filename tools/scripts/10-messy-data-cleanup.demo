@@ -22,6 +22,8 @@ expected. We'll create it with AI before the demo starts.
 
 [wait]
 
+[sleep: 5s]
+
 [navigate: ${LIST}]
 
 [new-chat]

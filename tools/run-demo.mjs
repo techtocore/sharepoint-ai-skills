@@ -431,6 +431,21 @@ function parseScript(src, page, section = 'demo') {
         };
       }
 
+      case 'sleep': {
+        const sleepMatch = arg.match(/^(\d+(?:\.\d+)?)(ms|s)?$/);
+        const sleepMs = sleepMatch
+          ? (sleepMatch[2] === 'ms' ? parseFloat(sleepMatch[1]) : parseFloat(sleepMatch[1]) * 1000)
+          : 3000;
+        return {
+          name: `Sleep ${arg || '3s'}`,
+          async run() {
+            printContext();
+            console.log(`    Waiting ${sleepMs}ms...`);
+            await activePage.waitForTimeout(sleepMs);
+          },
+        };
+      }
+
       case 'screenshot': {
         const screenshotPath = arg || 'tools/screenshots/demo.png';
         return {
