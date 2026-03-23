@@ -7,14 +7,17 @@
 
 [section: setup]
 
-[navigate: ${LIST}]
-
-The list doesn't exist yet — SharePoint will show a "not found" error. This is
-expected. We'll create it with AI before the demo starts.
-
 [navigate: ${SITE}]
 
 [open-chat]
+
+[new-chat]
+
+[prompt: Delete the list called "Customer Directory" if it exists.]
+
+[wait]
+
+[sleep: 3s]
 
 [new-chat]
 
