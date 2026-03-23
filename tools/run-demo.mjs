@@ -735,9 +735,12 @@ async function waitForCopilotResponse(page, chatFrame, timeoutMs = 60000) {
     '[aria-label*="stop generating"]',
   ];
 
+  const DOT_INTERVAL = 15000; // print a dot at most once every 15 seconds
+
   process.stdout.write('    Waiting for generation to start');
   let stopBtn = null;
   const startDeadline = Date.now() + 10000;
+  let lastDot = Date.now();
   outer: while (Date.now() < startDeadline) {
     for (const sel of stopSelectors) {
       const loc = chatFrame.locator(sel).first();
@@ -746,18 +749,19 @@ async function waitForCopilotResponse(page, chatFrame, timeoutMs = 60000) {
         break outer;
       }
     }
-    process.stdout.write('.');
+    if (Date.now() - lastDot >= DOT_INTERVAL) { process.stdout.write('.'); lastDot = Date.now(); }
     await page.waitForTimeout(300);
   }
 
   if (stopBtn) {
     process.stdout.write(' started.\n    Waiting for generation to finish');
+    lastDot = Date.now();
     while (Date.now() < deadline) {
       if (!await stopBtn.isVisible({ timeout: 500 }).catch(() => false)) {
         console.log(' done.');
         return;
       }
-      process.stdout.write('.');
+      if (Date.now() - lastDot >= DOT_INTERVAL) { process.stdout.write('.'); lastDot = Date.now(); }
       await page.waitForTimeout(500);
     }
     console.log('\n    Timed out waiting for stop button to disappear.');
@@ -768,6 +772,7 @@ async function waitForCopilotResponse(page, chatFrame, timeoutMs = 60000) {
   console.log('\n    Stop button not seen — polling for feedback buttons...');
   const feedbackSel = '[aria-label="Like"], [aria-label="Dislike"]';
   const initialCount = await chatFrame.locator(feedbackSel).count().catch(() => 0);
+  lastDot = Date.now();
 
   while (Date.now() < deadline) {
     const count = await chatFrame.locator(feedbackSel).count().catch(() => 0);
@@ -775,6 +780,7 @@ async function waitForCopilotResponse(page, chatFrame, timeoutMs = 60000) {
       console.log('    Generation complete (feedback buttons appeared).');
       return;
     }
+    if (Date.now() - lastDot >= DOT_INTERVAL) { process.stdout.write('.'); lastDot = Date.now(); }
     await page.waitForTimeout(500);
   }
 
