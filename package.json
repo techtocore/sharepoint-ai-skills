@@ -30,7 +30,10 @@
     "demo:citations:reset": "node tools/run-demo.mjs tools/scripts/citations.demo --reset",
     "demo:brand-review": "node tools/run-demo.mjs tools/scripts/brand-review.demo",
     "demo:brand-review:setup": "node tools/run-demo.mjs tools/scripts/brand-review.demo --setup",
-    "demo:brand-review:reset": "node tools/run-demo.mjs tools/scripts/brand-review.demo --reset"
+    "demo:brand-review:reset": "node tools/run-demo.mjs tools/scripts/brand-review.demo --reset",
+    "demo:messy-data-cleanup": "node tools/run-demo.mjs tools/scripts/10-messy-data-cleanup.demo",
+    "demo:messy-data-cleanup:setup": "node tools/run-demo.mjs tools/scripts/10-messy-data-cleanup.demo --setup",
+    "demo:messy-data-cleanup:reset": "node tools/run-demo.mjs tools/scripts/10-messy-data-cleanup.demo --reset"
   },
   "dependencies": {
     "playwright": "^1.52.0"

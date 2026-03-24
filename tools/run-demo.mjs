@@ -731,10 +731,7 @@ async function getChatInput(page, chatFrame) {
 async function slowType(locator, text, delayMs = 2) {
   await locator.click();
   await locator.fill('');
-  for (const char of text) {
-    await locator.type(char, { delay: 0 });
-    await new Promise(r => setTimeout(r, delayMs));
-  }
+  await locator.pressSequentially(text, { delay: delayMs });
 }
 
 /**

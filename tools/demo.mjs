@@ -178,11 +178,68 @@ async function selectDemo(demos) {
     process.stdin.on('data', onData);
   });
 
-  // ── Two-level loop ────────────────────────────────────────────────────────
+  // ── Level 3: action picker ────────────────────────────────────────────────
+  const pickAction = (demo) => new Promise(resolve => {
+    const actions = [
+      { key: 'setup+demo', label: 'Setup + Demo', desc: 'Run setup, then run the demo' },
+      ...(demo.hasSetup ? [{ key: 'setup', label: 'Setup only', desc: 'Prepare the environment for later' }] : []),
+      { key: 'demo', label: 'Demo only', desc: 'Skip setup — jump straight to the demo' },
+      ...(demo.hasReset ? [{ key: 'reset', label: 'Reset', desc: 'Tear down and restore to pre-demo state' }] : []),
+    ];
+    let cursor = 0;
+
+    const render = () => {
+      const w = header();
+      console.log(`  \x1B[2m← \x1B[0m\x1B[33m${demo.title.toUpperCase()}\x1B[0m`);
+      if (demo.description) console.log(`  \x1B[2m${demo.description}\x1B[0m`);
+      console.log('');
+      actions.forEach((action, i) => {
+        const selected = i === cursor;
+        const arrow    = selected ? '\x1B[1;36m▶\x1B[0m' : ' ';
+        const labelFmt = selected ? `\x1B[1;36m${action.label}\x1B[0m` : action.label;
+        const descFmt  = `\x1B[2m${action.desc}\x1B[0m`;
+        console.log(`  ${arrow} ${labelFmt}   ${descFmt}`);
+        console.log('');
+      });
+      console.log(`  \x1B[2m↑ ↓  navigate   Enter  select   Esc  back   Ctrl+C  quit\x1B[0m`);
+      console.log('');
+    };
+
+    render();
+    if (process.stdin.isTTY) process.stdin.setRawMode(true);
+    process.stdin.resume();
+
+    const onData = buf => {
+      const key = buf.toString();
+      if (key === '\x03') { process.exit(0); }
+      if (key === '\x1B[A' || key === 'k') { cursor = (cursor - 1 + actions.length) % actions.length; render(); }
+      else if (key === '\x1B[B' || key === 'j') { cursor = (cursor + 1) % actions.length; render(); }
+      else if (key === '\x1B' || key === '\x1B[D') {
+        process.stdin.removeListener('data', onData);
+        if (process.stdin.isTTY) process.stdin.setRawMode(false);
+        process.stdin.pause();
+        resolve(null); // back
+      } else if (key === '\r' || key === '\n') {
+        process.stdin.removeListener('data', onData);
+        if (process.stdin.isTTY) process.stdin.setRawMode(false);
+        process.stdin.pause();
+        process.stdout.write('\x1B[2J\x1B[H');
+        resolve(actions[cursor].key);
+      }
+    };
+    process.stdin.on('data', onData);
+  });
+
+  // ── Three-level loop ──────────────────────────────────────────────────────
   while (true) {
     const category = await pickCategory();
-    const demo = await pickDemo(category);
-    if (demo) return demo; // null means back — loop back to category picker
+    while (true) {
+      const demo = await pickDemo(category);
+      if (!demo) break; // Esc → back to category picker
+      const action = await pickAction(demo);
+      if (action) return { demo, action };
+      // null → back to demo picker, continue inner loop
+    }
   }
 }
 
@@ -239,6 +296,7 @@ async function main() {
   }
 
   let demo;
+  let action;
 
   if (arg) {
     const match =
@@ -252,12 +310,25 @@ async function main() {
       process.exit(1);
     }
     demo = match;
+    action = 'setup+demo'; // default when invoked directly
   } else {
-    demo = await selectDemo(demos);
+    ({ demo, action } = await selectDemo(demos));
   }
 
-  // Run setup section if present
-  if (demo.hasSetup) {
+  if (action === 'setup') {
+    console.log(`\n  Running setup for: ${demo.title}\n`);
+    runSection(demo.file, 'setup');
+    return;
+  }
+
+  if (action === 'reset') {
+    console.log(`\n  Running reset for: ${demo.title}\n`);
+    runSection(demo.file, 'reset');
+    return;
+  }
+
+  // action === 'setup+demo' or 'demo'
+  if (action === 'setup+demo' && demo.hasSetup) {
     console.log(`\n  Running setup check for: ${demo.title}\n`);
     const exitCode = runSection(demo.file, 'setup');
     if (exitCode !== 0) {
