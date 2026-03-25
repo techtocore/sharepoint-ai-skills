@@ -7,18 +7,33 @@
 
 [section: setup]
 
-Verify the "Project Documents" library exists with columns: Department (choice),
-Document Type (choice), Confidentiality (choice), Summary (multi-line text).
-All six files should be present with ALL metadata columns BLANK. If metadata
-was filled from a previous run, clear all values from every row.
+Creating the "Project Documents" library with metadata columns. If it already
+exists from a previous run, Copilot will skip creation — just confirm the
+columns and files are still in place.
 
-[navigate: ${LIBRARY}]
+[navigate: ${SITE}]
 
 [open-chat]
 
 [new-chat]
 
-Confirm 6 files are visible and all metadata columns are empty.
+[prompt: Create a document library called "Project Documents". Add these columns: Department (Choice: Marketing, Finance, HR, Legal, Engineering), Document Type (Choice: Policy, Contract, Report, Presentation, Proposal), Confidentiality (Choice: Public, Internal, Confidential, Restricted), Summary (Multiple lines of text).]
+
+[wait]
+
+Now upload 6 sample files to the library — a mix of departments and types.
+Good examples: an HR policy, a marketing proposal, a legal contract, a finance
+report, an NDA, and a salary bands document. Files with real text content work
+best since Copilot reads the actual text to infer the metadata.
+
+[confirm: Upload 6 sample files to the Project Documents library, then press Enter]
+
+[navigate: ${LIBRARY}]
+
+[new-chat]
+
+Confirm 6 files are visible and ALL metadata columns (Department, Document
+Type, Confidentiality, Summary) are blank before the demo.
 
 [pause]
 
