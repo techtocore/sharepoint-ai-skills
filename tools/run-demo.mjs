@@ -1075,12 +1075,15 @@ async function getChatInput(page, chatFrame) {
 }
 
 /**
- * Type text character-by-character so the audience can read it as it appears.
+ * Type text in chunks so the audience can read it as it appears.
  */
-async function slowType(locator, text, delayMs = 2) {
+async function slowType(locator, text, chunkSize = 5, delayMs = 10) {
   await locator.click();
   await locator.fill('');
-  await locator.pressSequentially(text, { delay: delayMs });
+  for (let i = 0; i < text.length; i += chunkSize) {
+    await locator.fill(text.slice(0, i + chunkSize));
+    await locator.page().waitForTimeout(delayMs);
+  }
 }
 
 /**
