@@ -187,6 +187,8 @@ body.sh #tmr{font-size:11px;min-width:36px;text-align:right}
 #sl{margin-top:6px;padding-top:6px;border-top:1px solid #252540}
 .st{font-size:10px;color:#555;padding:1px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:2px}
 .st.cur{color:#fff;background:#0078d4;font-weight:600}
+.st.pause{color:#c8922a}
+.st.cur.pause{color:#fff;background:#c8922a}
 body.sv #sl,body.sh #sl{display:none!important}
 
 /* button inactive state (running — inputs won't have effect yet) */
@@ -286,8 +288,10 @@ function poll(){
     if(sl&&s.steps&&s.steps.length){
       var html='';
       for(var j=0;j<s.steps.length;j++){
-        var cur=s.step&&(j+1===s.step);
-        html+='<div class="st'+(cur?' cur':'')+'">'+String(j+1)+'. '+s.steps[j].replace(/[<>&]/g,function(c){return c==='<'?'&lt;':c==='>'?'&gt;':'&amp;';})+'</div>';
+        var step=s.steps[j];var cur=s.step&&(j+1===s.step);
+        var cls='st'+(cur?' cur':'')+(step.pause?' pause':'');
+        var label=typeof step==='string'?step:step.name;
+        html+='<div class="'+cls+'">'+String(j+1)+'. '+label.replace(/[<>&]/g,function(c){return c==='<'?'&lt;':c==='>'?'&gt;':'&amp;';})+'</div>';
       }
       if(sl.innerHTML!==html){
         sl.innerHTML=html;
@@ -755,6 +759,7 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
       case 'pause':
         return {
           name: arg || 'Pause — presenter moment',
+          isPause: true,
           async run() {
             printContext();
             waitPrompt('  ▶  Press Enter to continue... ');
@@ -953,7 +958,7 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
 
 async function runSteps(getPage, steps) {
   const startTime = Date.now();
-  widgetUpdate({ startTime, steps: steps.map(s => s.name) });
+  widgetUpdate({ startTime, steps: steps.map(s => ({ name: s.name, pause: !!s.isPause })) });
 
   console.log('\nSteps:');
   const maxWidth = (process.stdout.columns || 80) - 6;
