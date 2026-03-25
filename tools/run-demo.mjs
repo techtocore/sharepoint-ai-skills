@@ -143,9 +143,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* slim vertical */
 body.sv #top{justify-content:center;padding:5px 5px 0;gap:2px}
 body.sv .mi{width:19px;height:19px}
-body.sv #main{padding:3px 5px 8px}
+body.sv #main{padding:3px 4px 8px}
 body.sv #si,body.sv #sn{display:none}
-body.sv .btn{padding:10px 4px;font-size:18px;text-align:center;margin-bottom:4px}
+body.sv #btns{display:flex;flex-direction:column;align-items:stretch}
+body.sv .btn{padding:9px 0;font-size:18px;text-align:center;margin-bottom:4px;width:100%}
 body.sv .bl{display:none}
 body.sv #foot{flex-direction:column;gap:1px;border:none;padding-top:3px;margin-top:0}
 body.sv #stat{display:none}
@@ -203,7 +204,7 @@ body.sh #tmr{font-size:11px;min-width:36px;text-align:right}
 
 <script>
 var st=null;
-var SIZES={full:[280,232],sv:[78,220],sh:[400,56]};
+var SIZES={full:[280,232],sv:[62,220],sh:[400,56]};
 var mode=localStorage.getItem('dw-mode')||'full';
 
 function setMode(m){

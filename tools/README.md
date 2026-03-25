@@ -61,7 +61,7 @@ The selected mode persists across sessions.
 | Mode | Icon | Window size | Contents |
 |------|------|-------------|----------|
 | **Full** | ⊡ | 280 × 265 | Step info, all three buttons, timer, status |
-| **Slim vertical** | ▐ | 78 × 220 | Icon-only buttons stacked vertically, timer |
+| **Slim vertical** | ▐ | 62 × 220 | Icon-only buttons stacked vertically, timer |
 | **Slim horizontal** | ▬ | 400 × 56 | Single-row bar: buttons, step name, timer |
 
 Clicking any button in the widget is equivalent to pressing that key in the terminal —
