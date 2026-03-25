@@ -115,6 +115,7 @@ async function ensureEdgeRunning() {
 // a local HTTP server for state and posts actions back.
 
 let _widgetState = {};
+let _widgetPauseRequested = false;
 
 function widgetUpdate(patch) {
   if (!USE_WIDGET) return;
@@ -145,6 +146,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn:active{opacity:.65}
 #bn{background:#0078d4;color:#fff;font-weight:600}
 #bb,#bs{background:#2d2d44;color:#ccc}
+#bp{background:#2d2d44;color:#888}#bp.on{background:#c8922a;color:#fff}
 .bl{margin-left:2px}
 #foot{display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid #252540;margin-top:2px}
 #tmr{font-size:12px;color:#555;font-variant-numeric:tabular-nums;letter-spacing:.02em}
@@ -175,6 +177,15 @@ body.sh .btn{width:auto;padding:5px 10px;font-size:12px;margin:0;display:inline-
 body.sh #foot{border:none;padding:0;margin:0;flex-shrink:0;gap:0}
 body.sh #stat{display:none}
 body.sh #tmr{font-size:11px;min-width:36px;text-align:right}
+
+/* step list */
+#sl{margin-top:6px;padding-top:6px;border-top:1px solid #252540}
+.st{font-size:10px;color:#555;padding:1px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:2px}
+.st.cur{color:#fff;background:#0078d4;font-weight:600}
+body.sv #sl,body.sh #sl{display:none!important}
+
+/* button inactive state (running — inputs won't have effect yet) */
+.btn.inactive{opacity:.38}
 </style>
 </head><body class="full">
 
@@ -207,16 +218,18 @@ body.sh #tmr{font-size:11px;min-width:36px;text-align:right}
     <button class="btn" id="bn" onclick="act('enter')">\u25ba\ufe0e<span class="bl">Next</span></button>
     <button class="btn" id="bb" onclick="act('b')">\u25c4\ufe0e<span class="bl">Back</span></button>
     <button class="btn" id="bs" onclick="act('s')">\u21e5<span class="bl">Skip</span></button>
+    <button class="btn" id="bp" onclick="togglePause()">\u23f8\ufe0e<span class="bl">Pause</span></button>
   </div>
   <div id="foot">
     <div id="tmr">00:00</div>
     <div id="stat">Ready</div>
   </div>
+  <div id="sl"></div>
 </div>
 
 <script>
 var st=null;
-var WIDTHS={full:280,sv:62,sh:400};
+var WIDTHS={full:364,sv:80,sh:520};
 var SH_H=58; // slim-h fixed content height
 var mode=localStorage.getItem('dw-mode')||'full';
 
@@ -239,6 +252,10 @@ function act(a){
   fetch('/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:a})});
 }
 
+function togglePause(){
+  fetch('/pause',{method:'POST'});
+}
+
 function fmt(ms){
   var s=Math.floor(ms/1000),m=Math.floor(s/60);
   return String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
@@ -255,6 +272,26 @@ function poll(){
     var el=document.getElementById('stat');
     el.textContent=s.waiting?'\u25b6 Waiting \u2014 Next or Enter':'Running\u2026';
     el.className=s.waiting?'w':'';
+    var bp=document.getElementById('bp');if(bp)bp.className='btn'+(s.pauseRequested?' on':'');
+    // Dim Next/Back/Skip while a step is running (still clickable — queued for next pause)
+    var w=!!s.waiting;
+    ['bn','bb','bs'].forEach(function(id){var b=document.getElementById(id);if(b){b.classList.toggle('inactive',!w);}});
+    // Render step list
+    var sl=document.getElementById('sl');
+    if(sl&&s.steps&&s.steps.length){
+      var html='';
+      for(var j=0;j<s.steps.length;j++){
+        var cur=s.step&&(j+1===s.step);
+        html+='<div class="st'+(cur?' cur':'')+'">'+String(j+1)+'. '+s.steps[j].replace(/[<>&]/g,function(c){return c==='<'?'&lt;':c==='>'?'&gt;':'&amp;';})+'</div>';
+      }
+      if(sl.innerHTML!==html){
+        sl.innerHTML=html;
+        requestAnimationFrame(function(){
+          var chrome=Math.max(28,window.outerHeight-window.innerHeight);
+          window.resizeTo(WIDTHS[mode],document.documentElement.scrollHeight+chrome+4);
+        });
+      }
+    }
   }).catch(function(){});
 }
 
@@ -296,6 +333,13 @@ function startWidgetServer() {
         });
         return;
       }
+      if (req.method === 'POST' && req.url === '/pause') {
+        _widgetPauseRequested = !_widgetPauseRequested;
+        widgetUpdate({ pauseRequested: _widgetPauseRequested });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ pauseRequested: _widgetPauseRequested }));
+        return;
+      }
       res.writeHead(404); res.end();
     });
 
@@ -310,7 +354,7 @@ async function launchWidgetWindow(port, edgePath) {
   const userDataDir = join(process.env.TEMP || process.env.TMPDIR || '/tmp', 'edge-widget');
   spawn(edgePath, [
     `--app=http://127.0.0.1:${port}`,
-    '--window-size=280,300',
+    '--window-size=364,300',
     '--window-position=10,200',
     `--user-data-dir=${userDataDir}`,
   ], { detached: true, stdio: 'ignore' }).unref();
@@ -350,12 +394,14 @@ async function main() {
   const pages = context.pages();
   const page = pages[0] ?? await context.newPage();
 
+  let _widgetServer = null;
   if (USE_WIDGET) {
     const edgePath = findEdgePath();
     if (!edgePath) {
       console.warn('  Warning: msedge.exe not found — widget window skipped.');
     } else {
-      const { port } = await startWidgetServer();
+      const { server, port } = await startWidgetServer();
+      _widgetServer = server;
       await launchWidgetWindow(port, edgePath);
     }
   }
@@ -390,6 +436,7 @@ async function main() {
 
   await runSteps(getActivePage, steps);
   await browser.close();
+  if (_widgetServer) _widgetServer.close();
 }
 
 // ─── Scenario definitions ─────────────────────────────────────────────────────
@@ -656,7 +703,40 @@ function parseScript(src, page, section = 'demo') {
           name: 'Wait for Copilot response',
           async run() {
             printContext();
-            await waitForCopilotResponse(activePage, chatFrame);
+            const ac = new AbortController();
+            let nav;
+
+            // Listen for s/b from widget buttons or terminal keypress
+            const prevReady = _keyQueueReady;
+            _keyQueueReady = function () {
+              if (prevReady) prevReady();
+              const idx = _keyQueue.findIndex(k => k === 's' || k === 'b');
+              if (idx !== -1) { nav = _keyQueue.splice(idx, 1)[0]; ac.abort(); }
+            };
+            let rawListener = null;
+            if (process.stdin.isTTY) {
+              process.stdin.setRawMode(true);
+              process.stdin.resume();
+              rawListener = buf => {
+                const k = buf.toString();
+                if (k === '\x03') process.exit(0);
+                if (k === 's' || k === 'b') { nav = k; ac.abort(); }
+              };
+              process.stdin.on('data', rawListener);
+            }
+
+            try {
+              await waitForCopilotResponse(activePage, chatFrame, 300000, ac.signal);
+            } finally {
+              _keyQueueReady = prevReady;
+              if (rawListener) {
+                process.stdin.off('data', rawListener);
+                process.stdin.setRawMode(false);
+                process.stdin.pause();
+              }
+            }
+            if (nav) console.log('');
+            return nav;
           },
         };
 
@@ -666,8 +746,10 @@ function parseScript(src, page, section = 'demo') {
           async run() {
             printContext();
             waitPrompt('  ▶  Press Enter to continue... ');
-            await waitForKey();
+            const key = await waitForKey();
             console.log('');
+            if (key === 'b') return 'back';
+            if (key === 's') return 'skip';
           },
         };
 
@@ -690,7 +772,9 @@ function parseScript(src, page, section = 'demo') {
             console.log('  │                                                         │');
             console.log('  └─────────────────────────────────────────────────────────┘');
             waitPrompt('  ▶  Press Enter once you have completed the action... ');
-            await waitForKey();
+            const key = await waitForKey();
+            if (key === 'b') return 'back';
+            if (key === 's') return 'skip';
             console.log('  Confirmed.\n');
           },
         };
@@ -740,7 +824,9 @@ function parseScript(src, page, section = 'demo') {
             console.log(`  │  ${uploadPath.slice(0, 53).padEnd(55)}│`);
             console.log('  └─────────────────────────────────────────────────────────┘');
             waitPrompt('  ▶  Press Enter once the file is attached in the chat... ');
-            await waitForKey();
+            const key = await waitForKey();
+            if (key === 'b') return 'back';
+            if (key === 's') return 'skip';
             console.log('  File attached.\n');
           },
         };
@@ -855,7 +941,7 @@ function parseScript(src, page, section = 'demo') {
 
 async function runSteps(getPage, steps) {
   const startTime = Date.now();
-  widgetUpdate({ startTime });
+  widgetUpdate({ startTime, steps: steps.map(s => s.name) });
 
   console.log('\nSteps:');
   const maxWidth = (process.stdout.columns || 80) - 6;
@@ -873,8 +959,21 @@ async function runSteps(getPage, steps) {
     try {
       await getPage().bringToFront().catch(() => {});
       widgetUpdate({ step: i + 1, total: steps.length, name: step.name, context: '', waiting: false });
-      await step.run();
+      const nav = await step.run();
+      if (nav === 'back') { i = Math.max(-1, i - 2); continue; }
+      if (nav === 'skip') continue;
+      if (_widgetPauseRequested) {
+        _widgetPauseRequested = false;
+        widgetUpdate({ pauseRequested: false });
+        waitPrompt('  \u23f8  Widget pause \u2014 press Enter to continue... ');
+        const pk = await waitForKey();
+        console.log('');
+        if (pk === 'b') { i = Math.max(-1, i - 2); continue; }
+        if (pk === 's') continue;
+      }
     } catch (err) {
+      _widgetPauseRequested = false;
+      widgetUpdate({ pauseRequested: false });
       console.error(`\n  Error in step ${i + 1}: ${err.message}`);
       await getPage().screenshot({ path: 'tools/debug-screenshot.png' }).catch(() => {});
       console.error('  Debug screenshot saved to tools/debug-screenshot.png');
@@ -1104,7 +1203,8 @@ async function slowType(locator, text, chunkSize = TYPE_CHUNK, delayMs = TYPE_DE
  *   2. Wait for it to disappear (generation ended).
  *   3. Fallback: poll for new Like/Dislike feedback buttons on the last message.
  */
-async function waitForCopilotResponse(page, chatFrame, timeoutMs = 300000) {
+async function waitForCopilotResponse(page, chatFrame, timeoutMs = 300000, signal = null) {
+  const aborted = () => signal?.aborted ?? false;
   const deadline = Date.now() + timeoutMs;
 
   const stopSelectors = [
@@ -1120,6 +1220,7 @@ async function waitForCopilotResponse(page, chatFrame, timeoutMs = 300000) {
   const startDeadline = Date.now() + 10000;
   let lastDot = Date.now();
   outer: while (Date.now() < startDeadline) {
+    if (aborted()) return;
     for (const sel of stopSelectors) {
       const loc = chatFrame.locator(sel).first();
       if (await loc.isVisible({ timeout: 500 }).catch(() => false)) {
@@ -1135,6 +1236,7 @@ async function waitForCopilotResponse(page, chatFrame, timeoutMs = 300000) {
     process.stdout.write(' started.\n    Waiting for generation to finish');
     lastDot = Date.now();
     while (Date.now() < deadline) {
+      if (aborted()) return;
       if (!await stopBtn.isVisible({ timeout: 500 }).catch(() => false)) {
         console.log(' done.');
         return;
@@ -1156,6 +1258,7 @@ async function waitForCopilotResponse(page, chatFrame, timeoutMs = 300000) {
   lastDot = Date.now();
 
   while (Date.now() < deadline) {
+    if (aborted()) return;
     const count = await chatFrame.locator(feedbackSel).count().catch(() => 0);
     if (count > initialCount) {
       console.log('    Generation complete (feedback buttons appeared).');

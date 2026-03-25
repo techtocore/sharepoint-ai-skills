@@ -60,9 +60,9 @@ The selected mode persists across sessions.
 
 | Mode | Icon | Window size | Contents |
 |------|------|-------------|----------|
-| **Full** | ⊡ | 280 × 265 | Step info, all three buttons, timer, status |
-| **Slim vertical** | ▐ | 62 × 220 | Icon-only buttons stacked vertically, timer |
-| **Slim horizontal** | ▬ | 400 × 56 | Single-row bar: buttons, step name, timer |
+| **Full** | ⊡ | 364 × auto | Step info, all three buttons, timer, status, step list |
+| **Slim vertical** | ▐ | 80 × auto | Icon-only buttons stacked vertically, timer |
+| **Slim horizontal** | ▬ | 520 × 56 | Single-row bar: buttons, step name, timer |
 
 Clicking any button in the widget is equivalent to pressing that key in the terminal —
 both inputs feed the same queue, so you can mix and match freely.
@@ -78,9 +78,12 @@ When the runner reaches a pause it waits for input from either the terminal or t
 | **Enter** | **Next ▶** | Run / continue the current step |
 | **s** | **Skip** | Skip this step and advance |
 | **b** | **Back ◀** | Go back and re-run the previous step |
+| — | **⏸ Pause** | Pause after the current step finishes (toggles on/off; amber when active) |
 | **Ctrl+C** | — | Quit |
 
 The terminal also shows an elapsed timer `[mm:ss]` at each step prompt.
+
+The **Pause** button queues a pause after the step that is currently running finishes. Press it during a long Copilot response to pause automatically when the response is done, without needing a `[pause]` in the script. Press again to cancel.
 
 ---
 
@@ -170,6 +173,27 @@ npm run demo:find-content:setup    # verify environment before the audience arri
 npm run demo:find-content          # run the demo
 npm run demo:find-content:reset    # clean up after
 ```
+
+---
+
+## Configuration
+
+Create `tools/demo.config.json` (gitignored — not committed) to override per-machine defaults.
+Copy `tools/demo.config.example.json` as a starting point:
+
+```json
+{
+  "typeChunkSize": 5,
+  "typeDelayMs": 10
+}
+```
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `typeChunkSize` | `5` | Characters typed per fill() call when slow-typing a prompt |
+| `typeDelayMs` | `10` | Milliseconds between fill() calls (controls perceived typing speed) |
+
+To type faster, increase `typeChunkSize` or decrease `typeDelayMs`. To type slower (e.g. for a live audience that needs more reading time), decrease `typeChunkSize` or increase `typeDelayMs`.
 
 ---
 
