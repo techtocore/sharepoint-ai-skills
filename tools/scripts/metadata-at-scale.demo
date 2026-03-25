@@ -8,15 +8,20 @@
 
 [section: setup]
 
-Verify the contracts document library is loaded and that the metadata columns are
+Verify the Contracts library is loaded with contracts and all metadata columns
 populated — Risk Level, Document Type, Contract Quarter, Has Termination Clause,
 Has Indemnification Clause, Energy Category, Continent, and Complexity.
+If columns are missing or blank, run the metadata extraction step first.
 
-[navigate: ${SITE}]
+[navigate: ${SITE}Contracts/]
 
 [open-chat]
 
 [new-chat]
+
+Confirm contracts are visible and all metadata columns have values.
+
+[pause]
 
 [section: demo]
 

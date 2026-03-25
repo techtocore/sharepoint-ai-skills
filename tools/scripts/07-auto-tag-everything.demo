@@ -26,9 +26,9 @@ Good examples: an HR policy, a marketing proposal, a legal contract, a finance
 report, an NDA, and a salary bands document. Files with real text content work
 best since Copilot reads the actual text to infer the metadata.
 
-[confirm: Upload 6 sample files to the Project Documents library, then press Enter]
-
 [navigate: ${LIBRARY}]
+
+[confirm: Upload 6 sample files to this library, then press Enter]
 
 [new-chat]
 

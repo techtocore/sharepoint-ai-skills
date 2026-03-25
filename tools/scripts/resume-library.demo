@@ -8,15 +8,20 @@
 
 [section: setup]
 
-Verify the Candidates document library exists and contains uploaded resume files
-before running the demo. The library should have at least a few resumes but no
-metadata columns yet — this demo builds them live.
+Verify the Candidates document library exists and contains uploaded resume files.
+If this is the first run, upload at least 5–8 resume files (PDF or Word) to the
+library now. The library should have no metadata columns yet — this demo builds
+them live.
 
-[navigate: ${SITE}]
+[navigate: ${SITE}Candidates/]
 
 [open-chat]
 
 [new-chat]
+
+Confirm the library shows resume files with no metadata columns.
+
+[pause]
 
 [section: demo]
 

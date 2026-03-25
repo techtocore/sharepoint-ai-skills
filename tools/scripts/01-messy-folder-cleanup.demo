@@ -7,11 +7,14 @@
 
 [section: setup]
 
-Verify the "Project Files" library exists and contains the six messy-named
-sample files. If clean-named files from a previous run are present, re-upload
-the originals or rename them back to the messy names.
+Verify the "Project Files" library exists and contains six messy-named files.
+If this is the first run, upload them now. If files from a previous run have
+clean names, rename them back: meeting notes jan.docx, FINAL budget v3 (2).xlsx,
+deck for sarah.pptx, IMG_4021.png, Untitled document.docx, asdfgh.pdf.
 
 [navigate: ${LIBRARY}]
+
+[confirm: Upload or rename files so all six messy names are present, then press Enter]
 
 [open-chat]
 
