@@ -37,7 +37,7 @@ import { spawn } from 'child_process';
 import { get as httpGet, createServer } from 'http';
 import { fileURLToPath } from 'url';
 
-// ─── Config file (tools/demo.config.json, gitignored) ────────────────────────
+// ─── Local config files (gitignored — copy *.example.* to use) ───────────────
 
 const _scriptDir = dirname(fileURLToPath(import.meta.url));
 let _cfg = {};
@@ -45,6 +45,11 @@ try { _cfg = JSON.parse(readFileSync(join(_scriptDir, 'demo.config.json'), 'utf8
 
 const TYPE_CHUNK = _cfg.typeChunkSize ?? 5;   // characters per fill() call
 const TYPE_DELAY = _cfg.typeDelayMs   ?? 10;  // ms between fills
+
+// Variable overrides: demo.vars.json is seeded into every script's var map before
+// [var:] declarations, so it wins over the script defaults.
+let _demoVars = {};
+try { _demoVars = JSON.parse(readFileSync(join(_scriptDir, 'demo.vars.json'), 'utf8')); } catch { /* none */ }
 
 const CDP_URL = process.env.CDP_URL ?? 'http://localhost:9222';
 const args = process.argv.slice(2);
@@ -549,7 +554,8 @@ function parseScript(src, page, section = 'demo') {
   // Script variables — set with [var: NAME = value], used as ${NAME} anywhere in the script.
   // A first pass collects all [var] declarations before building steps, so vars defined
   // anywhere in the file are available everywhere (including lines before the declaration).
-  const vars = {};
+  // demo.vars.json (gitignored) is pre-seeded and takes precedence over script [var:] defaults.
+  const vars = { ..._demoVars };
   for (const line of lines) {
     const trimmed = line.trim();
     if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
@@ -563,7 +569,7 @@ function parseScript(src, page, section = 'demo') {
           if (eqIdx !== -1) {
             const name = rest.slice(0, eqIdx).trim();
             const value = rest.slice(eqIdx + 1).trim();
-            vars[name] = value;
+            if (!(name in vars)) vars[name] = value; // file vars win
           }
         }
       }
@@ -572,6 +578,9 @@ function parseScript(src, page, section = 'demo') {
 
   // Substitute ${VAR} in a string using the collected vars map.
   const interpolate = str => str.replace(/\$\{([^}]+)\}/g, (_, name) => vars[name] ?? `\${${name}}`);
+
+  // Allow var values to reference other vars (e.g. [var: LIBRARY = ${SITE}/Contracts/])
+  for (const k of Object.keys(vars)) vars[k] = interpolate(vars[k]);
 
   let currentSection = 'demo'; // default section if no markers present
 

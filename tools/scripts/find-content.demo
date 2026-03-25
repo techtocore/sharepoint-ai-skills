@@ -2,7 +2,7 @@
 # Shows how Copilot can help users find specific documents and list items
 # without knowing where things are stored.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
 [category: Site & Copilot]
 
 [section: setup]

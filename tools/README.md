@@ -178,8 +178,25 @@ npm run demo:find-content:reset    # clean up after
 
 ## Configuration
 
-Create `tools/demo.config.json` (gitignored — not committed) to override per-machine defaults.
-Copy `tools/demo.config.example.json` as a starting point:
+Two gitignored files let you tune the runner per machine without touching committed files.
+Copy the `*.example.*` version of each to get started.
+
+### `tools/demo.vars.json` — your SharePoint URLs
+
+Scripts use `${SITE}`, `${LIBRARY}`, etc. as placeholders. Set your real URLs here so
+you never have to edit the script files themselves:
+
+```json
+{
+  "SITE": "https://contoso.sharepoint.com/sites/your-site/"
+}
+```
+
+`SITE` is the only var most scripts need — all other vars (`LIBRARY`, `LIST`, `SKILLS`) are
+defined in each script as `${SITE}relative/path/` and are resolved automatically.
+Values in `demo.vars.json` take precedence over `[var:]` declarations inside scripts.
+
+### `tools/demo.config.json` — typing speed and other tunables
 
 ```json
 {

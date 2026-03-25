@@ -3,7 +3,7 @@
 # extracting names, suggesting columns, categorizing candidates, and building
 # a structured hiring pipeline without manual data entry.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
 [category: Lists & Data]
 
 [section: setup]

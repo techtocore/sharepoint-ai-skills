@@ -1,7 +1,7 @@
 # Generate a Tracker From Scratch
 # AI builds an entire SharePoint list from a plain English description — columns, sample data, and views.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
 [category: Lists & Data]
 
 [section: setup]

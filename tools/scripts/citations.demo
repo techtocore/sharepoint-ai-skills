@@ -3,8 +3,8 @@
 # strategic document, searches a source corpus for supporting evidence, and writes
 # structured citation records back to a SharePoint list — automatically.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
-[var: SKILLS = https://microsoft.sharepoint-df.com/teams/ZachDemos/Agent%20Assets/Skills/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
+[var: SKILLS = ${SITE}Agent%20Assets/Skills/]
 [category: Skills & Pipelines]
 
 [section: setup]

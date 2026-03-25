@@ -1,8 +1,8 @@
 # Summarize This Folder
 # AI reads an entire folder of docs and produces a one-page executive summary.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
-[var: LIBRARY = https://microsoft.sharepoint-df.com/teams/ZachDemos/Q4%20Planning/Strategy%20Docs/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
+[var: LIBRARY = ${SITE}Q4%20Planning/Strategy%20Docs/]
 [category: Documents & Files]
 
 [section: setup]

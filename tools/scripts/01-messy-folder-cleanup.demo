@@ -1,8 +1,8 @@
 # Messy Folder Cleanup
 # AI reads file names and contents, then renames files to a consistent naming convention.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
-[var: LIBRARY = https://microsoft.sharepoint-df.com/teams/ZachDemos/Project%20Files/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
+[var: LIBRARY = ${SITE}Project%20Files/]
 [category: Documents & Files]
 
 [section: setup]

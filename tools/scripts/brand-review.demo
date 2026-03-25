@@ -3,8 +3,8 @@
 # guidelines — scoring files across voice, visual identity, messaging, and
 # consistency, then producing a prioritized remediation plan.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
-[var: SKILLS = https://microsoft.sharepoint-df.com/teams/ZachDemos/Agent%20Assets/Skills/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
+[var: SKILLS = ${SITE}Agent%20Assets/Skills/]
 [category: Skills & Pipelines]
 
 [section: setup]

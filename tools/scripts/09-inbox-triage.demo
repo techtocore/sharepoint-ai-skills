@@ -1,8 +1,8 @@
 # Inbox Triage
 # AI reads messy free-text help desk requests and auto-categorizes, prioritizes, and summarizes every row.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
-[var: LIST = https://microsoft.sharepoint-df.com/teams/ZachDemos/Lists/Help%20Desk%20Inbox/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
+[var: LIST = ${SITE}Lists/Help%20Desk%20Inbox/]
 [category: Lists & Data]
 
 [section: setup]

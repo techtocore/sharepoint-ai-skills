@@ -3,7 +3,7 @@
 # across a large contracts library — filtering, aggregating, and cross-referencing
 # at a scale that document search alone cannot support.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
 [category: Lists & Data]
 
 [section: setup]

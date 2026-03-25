@@ -1,8 +1,8 @@
 # Sort Into Folders
 # AI reads file contents, creates folders by topic, and moves files into the right folders.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
-[var: LIBRARY = https://microsoft.sharepoint-df.com/teams/ZachDemos/Shared%20Drive%20Dump/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
+[var: LIBRARY = ${SITE}Shared%20Drive%20Dump/]
 [category: Documents & Files]
 
 [section: setup]

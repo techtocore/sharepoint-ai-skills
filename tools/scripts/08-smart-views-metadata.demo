@@ -1,8 +1,8 @@
 # Smart Views From Metadata
 # Once metadata exists, AI can create views, generate reports, and answer cross-library questions.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
-[var: LIBRARY = https://microsoft.sharepoint-df.com/teams/ZachDemos/Project%20Documents/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
+[var: LIBRARY = ${SITE}Project%20Documents/]
 [category: Documents & Files]
 
 [section: setup]

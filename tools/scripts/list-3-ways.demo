@@ -3,7 +3,7 @@
 # a SharePoint list — from guided creation, to fully specified, to fully
 # autonomous with RALPH iterating to a production-ready result.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
 [category: Lists & Data]
 
 [section: setup]

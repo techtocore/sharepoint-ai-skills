@@ -1,8 +1,8 @@
 # The Comparison Report
 # AI reads two versions of a contract and summarizes what changed between them.
 
-[var: SITE = https://microsoft.sharepoint-df.com/teams/ZachDemos/]
-[var: LIBRARY = https://microsoft.sharepoint-df.com/teams/ZachDemos/Contracts/]
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
+[var: LIBRARY = ${SITE}Contracts/]
 [category: Documents & Files]
 
 [section: setup]
