@@ -35,6 +35,16 @@ import { readFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve, dirname, join } from 'path';
 import { spawn } from 'child_process';
 import { get as httpGet, createServer } from 'http';
+import { fileURLToPath } from 'url';
+
+// ─── Config file (tools/demo.config.json, gitignored) ────────────────────────
+
+const _scriptDir = dirname(fileURLToPath(import.meta.url));
+let _cfg = {};
+try { _cfg = JSON.parse(readFileSync(join(_scriptDir, 'demo.config.json'), 'utf8')); } catch { /* defaults */ }
+
+const TYPE_CHUNK = _cfg.typeChunkSize ?? 5;   // characters per fill() call
+const TYPE_DELAY = _cfg.typeDelayMs   ?? 10;  // ms between fills
 
 const CDP_URL = process.env.CDP_URL ?? 'http://localhost:9222';
 const args = process.argv.slice(2);
@@ -1077,7 +1087,7 @@ async function getChatInput(page, chatFrame) {
 /**
  * Type text in chunks so the audience can read it as it appears.
  */
-async function slowType(locator, text, chunkSize = 5, delayMs = 10) {
+async function slowType(locator, text, chunkSize = TYPE_CHUNK, delayMs = TYPE_DELAY) {
   await locator.click();
   await locator.fill('');
   for (let i = 0; i < text.length; i += chunkSize) {
