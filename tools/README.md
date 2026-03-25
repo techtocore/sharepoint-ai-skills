@@ -196,6 +196,25 @@ you never have to edit the script files themselves:
 defined in each script as `${SITE}relative/path/` and are resolved automatically.
 Values in `demo.vars.json` take precedence over `[var:]` declarations inside scripts.
 
+**Multiple sites:** use the `overrides` key to set vars for specific scripts by filename (without `.demo`):
+
+```json
+{
+  "SITE": "https://contoso.sharepoint.com/sites/demo/",
+  "overrides": {
+    "brand-review": {
+      "SITE": "https://contoso.sharepoint.com/sites/marketing/"
+    },
+    "metadata-at-scale": {
+      "SITE": "https://contoso.sharepoint.com/sites/legal/",
+      "LIBRARY": "https://contoso.sharepoint.com/sites/legal/Shared%20Documents/Contracts/"
+    }
+  }
+}
+```
+
+Per-script overrides are merged on top of the global vars, so you only need to specify what differs.
+
 ### `tools/demo.config.json` — typing speed and other tunables
 
 ```json

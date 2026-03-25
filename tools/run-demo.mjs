@@ -32,7 +32,7 @@
 
 import { chromium } from 'playwright';
 import { readFileSync, mkdirSync, existsSync } from 'fs';
-import { resolve, dirname, join } from 'path';
+import { resolve, dirname, join, basename } from 'path';
 import { spawn } from 'child_process';
 import { get as httpGet, createServer } from 'http';
 import { fileURLToPath } from 'url';
@@ -417,8 +417,11 @@ async function main() {
   // If the argument is a .demo script file, parse it; otherwise use a named scenario.
   if (SCENARIO.endsWith('.demo')) {
     const scriptPath = resolve(SCENARIO);
+    const scriptName = basename(scriptPath, '.demo');
+    const { overrides: _overrides = {}, ..._globalVars } = _demoVars;
+    const externalVars = { ..._globalVars, ...(_overrides[scriptName] ?? {}) };
     const src = readFileSync(scriptPath, 'utf8');
-    const parsed = parseScript(src, page, RUN_SECTION);
+    const parsed = parseScript(src, page, RUN_SECTION, externalVars);
     steps = parsed.steps;
     getActivePage = parsed.getActivePage;
     if (!steps.length) {
@@ -526,7 +529,7 @@ function tellMeAboutSiteSteps(page) {
  *                             confirmation that they've clicked the button in the UI
  *   [screenshot: path]        save a screenshot
  */
-function parseScript(src, page, section = 'demo') {
+function parseScript(src, page, section = 'demo', externalVars = {}) {
   // Pre-process: collapse multi-line [command: ...] blocks into single lines.
   // A line that starts with '[' but doesn't end with ']' is continued until a
   // line ending with ']' is found; interior newlines become spaces.
@@ -555,7 +558,7 @@ function parseScript(src, page, section = 'demo') {
   // A first pass collects all [var] declarations before building steps, so vars defined
   // anywhere in the file are available everywhere (including lines before the declaration).
   // demo.vars.json (gitignored) is pre-seeded and takes precedence over script [var:] defaults.
-  const vars = { ..._demoVars };
+  const vars = { ...externalVars };
   for (const line of lines) {
     const trimmed = line.trim();
     if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
