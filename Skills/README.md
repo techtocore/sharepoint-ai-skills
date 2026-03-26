@@ -38,9 +38,9 @@ Skills follow the [agentskills.io specification](https://agentskills.io/specific
 
 A skill is a folder containing a single `SKILL.md` file. The folder name must match the `name` field in the frontmatter exactly.
 
-**Where it goes in SharePoint:** `Skills/<skill-name>/SKILL.md`
+**Where it goes in SharePoint:** `Agent Assets/Skills/<skill-name>/SKILL.md`
 
-**Minimal example — `Skills/summarize-page/SKILL.md`:**
+**Minimal example — `Agent Assets/Skills/summarize-page/SKILL.md`:**
 
 ```markdown
 ---
