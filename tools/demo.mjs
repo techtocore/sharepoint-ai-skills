@@ -251,7 +251,7 @@ async function selectDemo(demos) {
 
 function runSection(demoFile, section, extraFlags = []) {
   const args = [RUNNER, demoFile, ...extraFlags];
-  if (section !== 'demo') args.push(`--${section}`);
+  if (section !== 'demo') args.push(`--${section}`); // handles setup, reset, all
 
   const result = spawnSync('node', args, {
     stdio: 'inherit',
@@ -265,28 +265,6 @@ function clearTerminal() {
   process.stdout.write('\x1B[2J\x1B[H');
 }
 
-function printReadyBanner(demo) {
-  const w = process.stdout.columns || 80;
-  console.log('');
-  console.log(`  \x1B[1;32m✓ Setup complete — ready to demo\x1B[0m`);
-  console.log(`  \x1B[2m${'─'.repeat(Math.min(w - 2, 60))}\x1B[0m`);
-  console.log(`  \x1B[1m${demo.title}\x1B[0m`);
-  if (demo.description) console.log(`  \x1B[2m${demo.description}\x1B[0m`);
-  console.log('');
-  process.stdout.write('  Press Enter to begin the demo... ');
-  return new Promise(resolve => {
-    if (process.stdin.isTTY) process.stdin.setRawMode(true);
-    process.stdin.resume();
-    process.stdin.once('data', buf => {
-      const key = buf.toString();
-      if (key === '\x03') process.exit(0);
-      if (process.stdin.isTTY) process.stdin.setRawMode(false);
-      process.stdin.pause();
-      console.log('');
-      resolve();
-    });
-  });
-}
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
@@ -335,29 +313,13 @@ async function main() {
   }
 
   // action === 'setup+demo' or 'demo'
+  clearTerminal();
   if (action === 'setup+demo' && demo.hasSetup) {
-    console.log(`\n  Running setup check for: ${demo.title}\n`);
-    const exitCode = runSection(demo.file, 'setup', extraFlags);
-    if (exitCode !== 0) {
-      console.error('\n  Setup exited with errors. Fix issues before running the demo.');
-      process.stdout.write('  Press Enter to continue anyway, or Ctrl+C to quit... ');
-      await new Promise(r => {
-        if (process.stdin.isTTY) process.stdin.setRawMode(true);
-        process.stdin.resume();
-        process.stdin.once('data', buf => {
-          if (buf.toString() === '\x03') process.exit(1);
-          if (process.stdin.isTTY) process.stdin.setRawMode(false);
-          process.stdin.pause();
-          r();
-        });
-      });
-    }
+    // Run setup + demo in a single browser session via --all
+    runSection(demo.file, 'all', extraFlags);
+  } else {
+    runSection(demo.file, 'demo', extraFlags);
   }
-
-  clearTerminal();
-  await printReadyBanner(demo);
-  clearTerminal();
-  runSection(demo.file, 'demo', extraFlags);
 }
 
 main().catch(err => {

@@ -54,7 +54,7 @@ try { _demoVars = JSON.parse(readFileSync(join(_scriptDir, 'demo.vars.json'), 'u
 const CDP_URL = process.env.CDP_URL ?? 'http://localhost:9222';
 const args = process.argv.slice(2);
 const SCENARIO = args.find(a => !a.startsWith('--')) ?? 'tell-me-about-site';
-const RUN_SECTION = args.includes('--setup') ? 'setup' : args.includes('--reset') ? 'reset' : 'demo';
+const RUN_SECTION = args.includes('--setup') ? 'setup' : args.includes('--reset') ? 'reset' : args.includes('--all') ? 'all' : 'demo';
 const USE_WIDGET = args.includes('--widget');
 
 // ─── Scenarios ───────────────────────────────────────────────────────────────
@@ -136,26 +136,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 /* top bar */
 #top{display:flex;justify-content:flex-end;gap:3px;padding:6px 8px 0}
-.mi{width:22px;height:22px;border:none;border-radius:4px;background:#252540;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s,color .12s;padding:0;flex-shrink:0}
+.mi{width:22px;height:22px;border:none;border-radius:4px;background:#252540;color:#888;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s,color .12s;padding:0;flex-shrink:0}
 .mi:hover{background:#3a3a58;color:#bbb}
 .mi.on{background:#0078d4;color:#fff}
 
 /* main */
 #main{padding:4px 12px 12px}
-#si{font-size:11px;color:#0078d4;font-weight:600;margin-bottom:2px}
-#sn{font-size:12px;color:#aaa;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#ctx{display:none;font-size:11px;color:#c8922a;border-left:2px solid #c8922a;padding:3px 7px;margin-bottom:8px;line-height:1.55;max-height:90px;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+#si{font-size:13px;color:#0078d4;font-weight:600;margin-bottom:2px}
+#sn{font-size:14px;color:#fff;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ctx{display:none;font-size:13px;color:#c8922a;border-left:2px solid #c8922a;padding:3px 7px;margin-bottom:8px;line-height:1.55;max-height:90px;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
 #ctx.has{display:block}
-.btn{display:block;width:100%;padding:7px 12px;margin-bottom:5px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit;text-align:left;transition:opacity .1s}
+.btn{display:block;width:100%;padding:7px 12px;margin-bottom:5px;border:none;border-radius:6px;cursor:pointer;font-size:15px;font-family:inherit;text-align:left;transition:opacity .1s}
 .btn:hover{opacity:.82}
 .btn:active{opacity:.65}
 #bn{background:#0078d4;color:#fff;font-weight:600}
 #bb,#bs{background:#2d2d44;color:#ccc}
-#bp{background:#2d2d44;color:#888}#bp.on{background:#c8922a;color:#fff}
+#bp{background:#2d2d44;color:#bbb}#bp.on{background:#c8922a;color:#fff}
 .bl{margin-left:2px}
 #foot{display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid #252540;margin-top:2px}
-#tmr{font-size:12px;color:#555;font-variant-numeric:tabular-nums;letter-spacing:.02em}
-#stat{font-size:10px;color:#555}
+#tmr{font-size:14px;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+#stat{font-size:12px;color:#aaa}
 #stat.w{color:#0078d4}
 
 /* slim vertical */
@@ -185,7 +185,7 @@ body.sh #tmr{font-size:11px;min-width:36px;text-align:right}
 
 /* step list */
 #sl{margin-top:6px;padding-top:6px;border-top:1px solid #252540}
-.st{font-size:10px;color:#555;padding:1px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:2px}
+.st{font-size:12px;color:#aaa;padding:1px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:2px}
 .st.cur{color:#fff;background:#0078d4;font-weight:600}
 .st.pause{color:#c8922a}
 .st.cur.pause{color:#fff;background:#c8922a}
@@ -433,7 +433,7 @@ async function main() {
       console.error('Add a [section: setup], [section: demo], or [section: reset] marker to the script.');
       process.exit(1);
     }
-    if (RUN_SECTION !== 'demo') {
+    if (RUN_SECTION === 'setup' || RUN_SECTION === 'reset') {
       console.log(`Running section: ${RUN_SECTION.toUpperCase()}\n`);
     }
   } else {
@@ -621,8 +621,10 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
     }
   }
 
-  // Filter to the requested section
-  const sectionBlocks = blocks.filter(b => b.section === section);
+  // Filter to the requested section ('all' runs setup then demo in one pass)
+  const sectionBlocks = section === 'all'
+    ? blocks.filter(b => b.section === 'setup' || b.section === 'demo')
+    : blocks.filter(b => b.section === section);
 
   // Convert blocks into steps. Each command becomes one step.
   // Talking points and comments that precede a command are attached to it.
@@ -814,7 +816,7 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
         };
 
       case 'upload': {
-        const uploadPath = resolve(arg);
+        const uploadPath = resolve(_scriptDir, '..', arg);
         const uploadFileName = uploadPath.split(/[\\/]/).pop();
         return {
           name: `Upload file: ${uploadFileName}`,
@@ -865,12 +867,12 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
       }
 
       case 'screenshot': {
-        const screenshotPath = arg || 'tools/screenshots/demo.png';
+        const screenshotPath = resolve(_scriptDir, '..', arg || 'tools/screenshots/demo.png');
         return {
           name: `Screenshot → ${screenshotPath}`,
           async run() {
             printContext();
-            mkdirSync(dirname(resolve(screenshotPath)), { recursive: true });
+            mkdirSync(dirname(screenshotPath), { recursive: true });
             await activePage.screenshot({ path: screenshotPath });
             console.log(`    Saved ${screenshotPath}`);
           },
@@ -905,6 +907,114 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
               waitPrompt('  ▶  Press Enter to continue anyway, or Ctrl+C to abort... ');
               await waitForKey();
               console.log('');
+            }
+          },
+        };
+      }
+
+      case 'upload-library': {
+        const localPath = resolve(_scriptDir, '..', arg);
+        const uploadFileName = basename(localPath);
+        return {
+          name: `Upload to library: ${uploadFileName}`,
+          async run() {
+            printContext();
+
+            // If the asset doesn't exist locally, fall back to a manual confirm.
+            if (!existsSync(localPath)) {
+              console.log('');
+              console.log('  ┌─────────────────────────────────────────────────────────┐');
+              console.log('  │  ASSET NOT FOUND — upload manually:                     │');
+              console.log(`  │  ${uploadFileName.slice(0, 53).padEnd(55)}│`);
+              console.log('  │  Upload the file to the current library, then continue. │');
+              console.log('  └─────────────────────────────────────────────────────────┘');
+              waitPrompt('  ▶  Press Enter once the file is uploaded, or s to skip... ');
+              const k = await waitForKey();
+              if (k === 'b') return 'back';
+              if (k === 's') return 'skip';
+              return;
+            }
+
+            // Derive server-relative folder path from current page URL.
+            // e.g. /sites/demo/Messy%20Files/Forms/AllItems.aspx → /sites/demo/Messy Files
+            const urlObj = new URL(activePage.url());
+            const origin = urlObj.origin;
+            const folderPath = decodeURIComponent(
+              urlObj.pathname.replace(/\/Forms\/[^/]*$/, '').replace(/\/$/, '')
+            );
+
+            process.stdout.write(`    Checking "${uploadFileName}"... `);
+
+            // Check existence and fetch form digest in one browser-context call.
+            // Use _spPageContextInfo.webAbsoluteUrl so API calls are scoped to the
+            // correct site (e.g. /teams/ZachEval/_api/...) not just the origin.
+            const check = await activePage.evaluate(async ({ origin, folder, file }) => {
+              const webUrl = window._spPageContextInfo?.webAbsoluteUrl ?? origin;
+
+              const headResp = await fetch(
+                `${origin}${encodeURI(folder)}/${encodeURIComponent(file)}`,
+                { method: 'HEAD' }
+              ).catch(() => null);
+              if (headResp?.ok) return { exists: true };
+
+              const digestResp = await fetch(`${webUrl}/_api/contextinfo`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json;odata=verbose' },
+              }).catch(() => null);
+              if (!digestResp?.ok) return { exists: false, error: 'no-digest' };
+              const json = await digestResp.json().catch(() => null);
+              const digest = json?.d?.GetContextWebInformation?.FormDigestValue ?? null;
+              if (!digest) return { exists: false, error: 'no-digest' };
+              return { exists: false, digest, webUrl };
+            }, { origin, folder: folderPath, file: uploadFileName });
+
+            if (check.exists) {
+              console.log('already present — skipping.');
+              return;
+            }
+
+            if (check.error) {
+              console.log('\n  ⚠  Could not authenticate with SharePoint.');
+              waitPrompt('  ▶  Upload the file manually, then press Enter... ');
+              const k = await waitForKey();
+              if (k === 'b') return 'back';
+              if (k === 's') return 'skip';
+              return;
+            }
+
+            console.log('uploading...');
+            process.stdout.write(`    Uploading "${uploadFileName}"... `);
+
+            const fileBase64 = readFileSync(localPath).toString('base64');
+            const upload = await activePage.evaluate(
+              async ({ webUrl, folder, file, b64, digest }) => {
+                const binary = atob(b64);
+                const buf = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) buf[i] = binary.charCodeAt(i);
+                const escapedFolder = folder.replace(/'/g, "''");
+                const escapedFile   = file.replace(/'/g, "''");
+                const apiUrl = `${webUrl}/_api/web/GetFolderByServerRelativeUrl('${escapedFolder}')/Files/add(url='${escapedFile}',overwrite=false)`;
+                const resp = await fetch(apiUrl, {
+                  method: 'POST',
+                  headers: {
+                    'Accept': 'application/json;odata=verbose',
+                    'X-RequestDigest': digest,
+                  },
+                  body: buf.buffer,
+                }).catch(() => ({ ok: false, status: 0 }));
+                return { ok: resp.ok, status: resp.status };
+              },
+              { webUrl: check.webUrl, folder: folderPath, file: uploadFileName, b64: fileBase64, digest: check.digest }
+            );
+
+            if (upload.ok) {
+              console.log('done.');
+            } else {
+              console.log(`failed (HTTP ${upload.status}).`);
+              waitPrompt('  ▶  Upload the file manually, then press Enter... ');
+              const k = await waitForKey();
+              if (k === 'b') return 'back';
+              if (k === 's') return 'skip';
             }
           },
         };

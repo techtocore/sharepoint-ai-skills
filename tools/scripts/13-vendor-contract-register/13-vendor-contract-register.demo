@@ -10,9 +10,22 @@
 
 [navigate: ${SITE}]
 
-Confirm this is a clean site. Upload the four sample contract documents (Northwind, Trey Research, Fourth Coffee, Fabrikam) to a document library called "Contract Documents" before proceeding.
+[open-chat]
 
-[pause: Verify contract PDFs are uploaded to Contract Documents library]
+[new-chat]
+
+[prompt: Create a document library called "Contract Documents" if it doesn't already exist.]
+
+[wait]
+
+[navigate: ${SITE}Contract%20Documents/]
+
+[assert: ${SITE}Contract%20Documents/]
+
+[upload-library: tools/scripts/vendor-contract-register/assets/Northwind Cloud Services Contract.pdf]
+[upload-library: tools/scripts/vendor-contract-register/assets/Trey Research Contract.pdf]
+[upload-library: tools/scripts/vendor-contract-register/assets/Fourth Coffee Contract.pdf]
+[upload-library: tools/scripts/vendor-contract-register/assets/Fabrikam Creative Agency Contract.pdf]
 
 [open-chat]
 

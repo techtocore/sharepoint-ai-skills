@@ -6,6 +6,7 @@ AI skills are instruction files that give a Copilot agent a focused capability. 
 
 | Folder | Skill | Description |
 |---|---|---|
+| [autoresearch/](./autoresearch/) | Autoresearch | Optimizes any Knowledge Agent skill by iteratively running it against test inputs, scoring outputs with binary evals, mutating the prompt to fix failures, and keeping improvements. Adapts Karpathy's autoresearch methodology to KA's multi-turn conversation architecture. |
 | [authoring-sharepoint-markdown/](./authoring-sharepoint-markdown/) | Authoring SharePoint Markdown | Converts documents and gathered content into SharePoint-compatible markdown files. Covers formatting rules, templates, and a six-step workflow for publishing to SharePoint pages and web parts. |
 | [brainstorming-design-docs/](./brainstorming-design-docs/) | Brainstorming to Design Doc | Guides a raw idea through structured brainstorming into a complete design document. Asks clarifying questions one at a time, proposes alternatives with trade-offs, builds the design incrementally with user approval, then delivers SharePoint-ready Markdown. |
 | [copy-editing/](./copy-editing/) | Copy Editing | Edits documents using seven sequential sweeps: Clarity, Voice & Tone, So What, Prove It, Specificity, Scannability, and Action. Run all sweeps for a full edit, or target a specific one. |

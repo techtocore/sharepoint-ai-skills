@@ -2,27 +2,42 @@
 # AI reads file names and contents, then renames files to a consistent naming convention.
 
 [var: SITE = https://contoso.sharepoint.com/sites/demo/]
-[var: LIBRARY = ${SITE}Project%20Files/]
+[var: LIBRARY = ${SITE}Messy%20Files/]
 [category: Documents & Files]
 
 [section: setup]
 
-Verify the "Project Files" library exists and contains six messy-named files.
-If this is the first run, upload them now. If files from a previous run have
-clean names, rename them back: meeting notes jan.docx, FINAL budget v3 (2).xlsx,
-deck for sarah.pptx, IMG_4021.png, Untitled document.docx, asdfgh.pdf.
-
-[navigate: ${LIBRARY}]
-
-[confirm: Upload or rename files so all six messy names are present, then press Enter]
+[navigate: ${SITE}]
 
 [open-chat]
 
 [new-chat]
 
-Confirm the chat pane shows a fresh session and the library shows six files
-with messy names: meeting notes jan.docx, FINAL budget v3 (2).xlsx,
-deck for sarah.pptx, IMG_4021.png, Untitled document.docx, asdfgh.pdf.
+Ask Copilot to create the "Messy Files" library if it doesn't exist yet.
+
+[prompt: Create a document library called "Messy Files" if it doesn't already exist.]
+
+[wait]
+
+[navigate: ${LIBRARY}]
+
+[assert: ${LIBRARY}]
+
+Uploading the six messy-named files if they aren't already present.
+
+[upload-library: tools/scripts/01-messy-folder-cleanup/assets/meeting notes jan.docx]
+[upload-library: tools/scripts/01-messy-folder-cleanup/assets/FINAL budget v3 (2).xlsx]
+[upload-library: tools/scripts/01-messy-folder-cleanup/assets/deck for sarah.pptx]
+[upload-library: tools/scripts/01-messy-folder-cleanup/assets/IMG_4021.png]
+[upload-library: tools/scripts/01-messy-folder-cleanup/assets/Untitled document.docx]
+[upload-library: tools/scripts/01-messy-folder-cleanup/assets/asdfgh.pdf]
+
+[open-chat]
+
+[new-chat]
+
+Confirm the chat pane shows a fresh session and the library shows the six
+messy-named files.
 
 [pause]
 
