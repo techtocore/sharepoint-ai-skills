@@ -23,6 +23,8 @@ columns and files are still in place.
 
 [navigate: ${LIBRARY}]
 
+[assert: ${LIBRARY}]
+
 [upload-library: tools/scripts/07-auto-tag-everything/assets/HR-Policy.docx]
 [upload-library: tools/scripts/07-auto-tag-everything/assets/Marketing-Proposal.docx]
 [upload-library: tools/scripts/07-auto-tag-everything/assets/Legal-Contract.docx]
