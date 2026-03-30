@@ -38,3 +38,6 @@ tools/step*.png
 # Local demo tool config/vars — not committed so each machine can tune its own settings
 tools/demo.config.json
 tools/demo.vars.json
+
+# Local-only demo scripts — not committed; use for unreleased / experimental features
+tools/scripts/local/
