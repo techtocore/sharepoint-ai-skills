@@ -907,22 +907,31 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
           name: `Assert accessible: ${assertUrl}`,
           async run() {
             printContext();
-            process.stdout.write(`    Checking ${assertUrl} ... `);
-            // Use a temporary page so we don't navigate away from the active tab
-            const checkPage = await activePage.context().newPage();
+            process.stdout.write(`    Waiting for ${assertUrl} ...`);
+            // Poll in a temporary page so we don't navigate away from the active tab.
+            // Retry every 3s for up to 60s — gives SharePoint time to finish creating
+            // a library or list before the next navigate/upload step.
+            const deadline = Date.now() + 60_000;
             let passed = false;
-            try {
-              const response = await checkPage.goto(assertUrl, { waitUntil: 'load', timeout: 20000 }).catch(() => null);
-              passed = !!(response && response.status() < 400);
-            } finally {
-              await checkPage.close().catch(() => {});
+            while (!passed && Date.now() < deadline) {
+              const checkPage = await activePage.context().newPage();
+              try {
+                const response = await checkPage.goto(assertUrl, { waitUntil: 'load', timeout: 10000 }).catch(() => null);
+                passed = !!(response && response.status() < 400);
+              } finally {
+                await checkPage.close().catch(() => {});
+              }
+              if (!passed && Date.now() < deadline) {
+                process.stdout.write('.');
+                await new Promise(r => setTimeout(r, 3000));
+              }
             }
             if (passed) {
-              console.log('OK');
+              console.log(' OK');
             } else {
               console.log('');
               console.log('  ┌─────────────────────────────────────────────────────────┐');
-              console.log('  │  ASSERTION FAILED — resource may be missing             │');
+              console.log('  │  ASSERTION FAILED — resource not accessible after 60s   │');
               console.log(`  │  ${assertUrl.slice(0, 53).padEnd(55)}│`);
               console.log('  │  Check the setup instructions before continuing.        │');
               console.log('  └─────────────────────────────────────────────────────────┘');

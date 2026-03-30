@@ -17,9 +17,9 @@
 
 [wait]
 
-[navigate: ${LIBRARY}]
-
 [assert: ${LIBRARY}]
+
+[navigate: ${LIBRARY}]
 
 [upload-library: tools/scripts/06-duplicate-detective/assets/Brand-Guidelines-2024.pdf]
 [upload-library: tools/scripts/06-duplicate-detective/assets/Brand Guide Final.pdf]

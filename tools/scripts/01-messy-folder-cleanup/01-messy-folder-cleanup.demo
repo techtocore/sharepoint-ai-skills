@@ -19,9 +19,9 @@ Ask Copilot to create the "Messy Files" library if it doesn't exist yet.
 
 [wait]
 
-[navigate: ${LIBRARY}]
-
 [assert: ${LIBRARY}]
+
+[navigate: ${LIBRARY}]
 
 Uploading the six messy-named files if they aren't already present.
 

@@ -17,9 +17,9 @@
 
 [wait]
 
-[navigate: ${LIBRARY}]
-
 [assert: ${LIBRARY}]
+
+[navigate: ${LIBRARY}]
 
 [upload-library: tools/scripts/05-summarize-folder/assets/market-analysis.docx]
 [upload-library: tools/scripts/05-summarize-folder/assets/product-priorities.docx]

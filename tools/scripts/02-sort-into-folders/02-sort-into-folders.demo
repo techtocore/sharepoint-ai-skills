@@ -17,9 +17,9 @@
 
 [wait]
 
-[navigate: ${LIBRARY}]
-
 [assert: ${LIBRARY}]
+
+[navigate: ${LIBRARY}]
 
 [upload-library: tools/scripts/02-sort-into-folders/assets/Q3-revenue-report.xlsx]
 [upload-library: tools/scripts/02-sort-into-folders/assets/brand-guidelines-v2.pdf]

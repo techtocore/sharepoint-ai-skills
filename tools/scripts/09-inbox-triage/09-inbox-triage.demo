@@ -27,9 +27,9 @@
 
 [sleep: 5s]
 
-[navigate: ${LIST}]
-
 [assert: ${LIST}]
+
+[navigate: ${LIST}]
 
 [new-chat]
 

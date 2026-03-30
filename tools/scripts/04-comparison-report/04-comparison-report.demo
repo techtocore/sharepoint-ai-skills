@@ -17,9 +17,9 @@
 
 [wait]
 
-[navigate: ${LIBRARY}]
-
 [assert: ${LIBRARY}]
+
+[navigate: ${LIBRARY}]
 
 [upload-library: tools/scripts/04-comparison-report/assets/Northwind-MSA-v1.docx]
 [upload-library: tools/scripts/04-comparison-report/assets/Northwind-MSA-v2.docx]

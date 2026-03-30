@@ -13,6 +13,8 @@ Department, Document Type, Confidentiality, and Summary filled in for all 6
 files. If any view called "Confidential Review" exists from a previous run,
 delete it.
 
+[assert: ${LIBRARY}]
+
 [navigate: ${LIBRARY}]
 
 [open-chat]

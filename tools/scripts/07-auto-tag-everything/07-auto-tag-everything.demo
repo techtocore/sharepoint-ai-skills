@@ -21,9 +21,9 @@ columns and files are still in place.
 
 [wait]
 
-[navigate: ${LIBRARY}]
-
 [assert: ${LIBRARY}]
+
+[navigate: ${LIBRARY}]
 
 [upload-library: tools/scripts/07-auto-tag-everything/assets/HR-Policy.docx]
 [upload-library: tools/scripts/07-auto-tag-everything/assets/Marketing-Proposal.docx]
