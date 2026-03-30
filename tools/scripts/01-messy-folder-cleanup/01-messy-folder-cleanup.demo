@@ -91,11 +91,18 @@ power move.
 
 [section: reset]
 
-Rename all files back to their original messy names for the next run. Manually
-rename each file in the library back to: meeting notes jan.docx, FINAL budget
-v3 (2).xlsx, deck for sarah.pptx, IMG_4021.png, Untitled document.docx,
-asdfgh.pdf.
-
 [navigate: ${LIBRARY}]
+
+[open-chat]
+
+[new-chat]
+
+[prompt: Rename these files back to their original names exactly as listed — do all six now: "meeting notes jan.docx", "FINAL budget v3 (2).xlsx", "deck for sarah.pptx", "IMG_4021.png", "Untitled document.docx", "asdfgh.pdf".]
+
+[wait]
+
+Confirm all 6 files are back to their original messy names.
+
+[pause]
 
 [new-chat]

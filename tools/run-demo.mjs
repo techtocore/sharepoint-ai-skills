@@ -152,6 +152,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #bn{background:#0078d4;color:#fff;font-weight:600}
 #bb,#bs{background:#2d2d44;color:#ccc}
 #bp{background:#2d2d44;color:#bbb}#bp.on{background:#c8922a;color:#fff}
+#br{background:#2d2d44;color:#c8922a;display:none}#br.show{display:block}
 .bl{margin-left:2px}
 #foot{display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid #252540;margin-top:2px}
 #tmr{font-size:14px;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.02em}
@@ -226,6 +227,7 @@ body.sv #sl,body.sh #sl{display:none!important}
     <button class="btn" id="bb" onclick="act('b')">\u25c4\ufe0e<span class="bl">Back</span></button>
     <button class="btn" id="bs" onclick="act('s')">\u21e5<span class="bl">Skip</span></button>
     <button class="btn" id="bp" onclick="togglePause()">\u23f8\ufe0e<span class="bl">Pause</span></button>
+    <button class="btn" id="br" onclick="act('r')">\u21ba<span class="bl">Reset</span></button>
   </div>
   <div id="foot">
     <div id="tmr">00:00</div>
@@ -280,6 +282,7 @@ function poll(){
     el.textContent=s.waiting?'\u25b6 Waiting \u2014 Next or Enter':'Running\u2026';
     el.className=s.waiting?'w':'';
     var bp=document.getElementById('bp');if(bp)bp.className='btn'+(s.pauseRequested?' on':'');
+    var br=document.getElementById('br');if(br)br.className='btn'+(s.resetAvailable?' show':'');
     // Dim Next/Back/Skip while a step is running (still clickable — queued for next pause)
     var w=!!s.waiting;
     ['bn','bb','bs'].forEach(function(id){var b=document.getElementById(id);if(b){b.classList.toggle('inactive',!w);}});
@@ -295,10 +298,6 @@ function poll(){
       }
       if(sl.innerHTML!==html){
         sl.innerHTML=html;
-        requestAnimationFrame(function(){
-          var chrome=Math.max(28,window.outerHeight-window.innerHeight);
-          window.resizeTo(WIDTHS[mode],document.documentElement.scrollHeight+chrome+4);
-        });
       }
     }
   }).catch(function(){});
@@ -447,6 +446,29 @@ async function main() {
   }
 
   await runSteps(getActivePage, steps);
+
+  // After demo/all completes, offer to run the reset section if one exists.
+  if (SCENARIO.endsWith('.demo') && (RUN_SECTION === 'demo' || RUN_SECTION === 'all')) {
+    const scriptPath = resolve(SCENARIO);
+    const src = readFileSync(scriptPath, 'utf8');
+    if (src.includes('[section: reset]')) {
+      widgetUpdate({ resetAvailable: true, waiting: true });
+      waitPrompt('  Demo complete — press r to reset, or Enter to close: ');
+      const k = await waitForKey();
+      widgetUpdate({ resetAvailable: false, waiting: false });
+      if (k === 'r') {
+        const scriptName = basename(scriptPath, '.demo');
+        const { overrides: _overrides = {}, ..._globalVars } = _demoVars;
+        const externalVars = { ..._globalVars, ...(_overrides[scriptName] ?? {}) };
+        const resetParsed = parseScript(src, page, 'reset', externalVars);
+        if (resetParsed.steps.length) {
+          console.log('\nRunning section: RESET\n');
+          await runSteps(resetParsed.getActivePage, resetParsed.steps);
+        }
+      }
+    }
+  }
+
   await browser.close();
   if (_widgetServer) _widgetServer.close();
 }
