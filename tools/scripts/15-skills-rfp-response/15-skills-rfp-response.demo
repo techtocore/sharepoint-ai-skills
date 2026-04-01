@@ -143,7 +143,7 @@ and tells you when it's not sure. That's how you put AI into a real workflow.
 
 [section: reset]
 
-[navigate: ${LIST}]
+[navigate: ${SITE}]
 
 [open-chat]
 
@@ -155,13 +155,29 @@ and tells you when it's not sure. That's how you put AI into a real workflow.
 
 [new-chat]
 
-[prompt: Delete the list called "RFP Questions".]
+[prompt: Delete the list called "RFP Questions" if it exists.]
 
 [wait]
 
-[confirm: Click "Delete" in the SharePoint confirmation dialog to complete the deletion]
+[sleep: 3s]
 
 [new-chat]
+
+[prompt: Create a new SharePoint list called "RFP Questions" with these columns: Title (single line of text, the question label — built-in Title column), Full Question (Multiple lines of text), Category (Choice: Technical, Security, Support, Pricing, Compliance, General), Priority (Choice: Must Answer, Nice to Have), Status (Choice: Open, Drafted, Reviewed, Submitted), Draft Response (Multiple lines of text), Sources Used (Multiple lines of text), Confidence (Single line of text).]
+
+[wait]
+
+[sleep: 5s]
+
+[assert: ${LIST}]
+
+[navigate: ${LIST}]
+
+[new-chat]
+
+[prompt: Add these 5 items to the RFP Questions list: 1. Title: "Cloud Migration Approach" | Full Question: "Describe your methodology for migrating enterprise workloads to Azure, including typical timelines, risk mitigation strategies, and references from similar engagements." | Category: Technical | Priority: Must Answer | Status: Open. 2. Title: "Data Security Standards" | Full Question: "Detail your security certifications, data encryption standards, and approach to zero-trust architecture. Include your incident response procedures and most recent third-party audit results." | Category: Security | Priority: Must Answer | Status: Open. 3. Title: "Support Model & SLAs" | Full Question: "What support tiers do you offer? Provide SLA response times, escalation procedures, and customer satisfaction metrics for your enterprise support program." | Category: Support | Priority: Must Answer | Status: Open. 4. Title: "Training & Change Management" | Full Question: "How do you ensure successful adoption post-implementation? Describe your training programs, change management methodology, and knowledge transfer approach." | Category: General | Priority: Nice to Have | Status: Open. 5. Title: "Analytics & Reporting" | Full Question: "Describe your data analytics capabilities, including AI/ML integration, dashboard options, and how you handle data governance and compliance for reporting workflows." | Category: Technical | Priority: Must Answer | Status: Open.]
+
+[wait]
 
 [navigate: ${ARCHIVE}]
 
@@ -170,5 +186,13 @@ and tells you when it's not sure. That's how you put AI into a real workflow.
 [prompt: Delete all files from this Proposal Archive library — remove all 5 documents.]
 
 [wait]
+
+[sleep: 3s]
+
+[upload-library: tools/scripts/15-skills-rfp-response/assets/Zava Cloud Migration Proposal - Contoso 2024.docx]
+[upload-library: tools/scripts/15-skills-rfp-response/assets/Zava Data Analytics Platform - Fabrikam 2024.docx]
+[upload-library: tools/scripts/15-skills-rfp-response/assets/Zava Enterprise Support Services - Woodgrove 2024.docx]
+[upload-library: tools/scripts/15-skills-rfp-response/assets/Zava Security and Compliance Overview - Northwind 2025.docx]
+[upload-library: tools/scripts/15-skills-rfp-response/assets/Zava Professional Services and Training - Adatum 2025.docx]
 
 [new-chat]
