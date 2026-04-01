@@ -126,13 +126,26 @@ written better prompts to fix both.
 
 [pause]
 
-Now let's close the loop. Update the weakest prompt and run the eval again.
+Now let's close the loop. First, update the weakest prompt.
 
 [navigate: ${LIBRARY}]
 
 [new-chat]
 
-[prompt: Update the autofill prompt for the lowest-scoring column using the improvement suggestion from the eval results. Then re-run the Autofill Eval Judge skill and compare the new scores to the previous Eval Run ID. Did the rewrite improve accuracy?]
+[prompt: Update the autofill prompt for the lowest-scoring column using the improvement suggestion from the eval results.]
+
+[wait]
+
+Prompt updated. Now we need to re-run autofill on the existing files so they
+get re-processed with the new prompt.
+
+[confirm: In the library settings, re-run autofill on all 5 documents — select all files, then run autofill]
+
+Now let's re-score with the eval judge and compare against the previous run.
+
+[new-chat]
+
+[prompt: Run the Autofill Eval Judge skill and compare the new scores to the previous Eval Run ID. Did the rewrite improve accuracy?]
 
 [wait]
 
