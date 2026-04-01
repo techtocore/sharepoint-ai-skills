@@ -27,9 +27,7 @@ You are helping a user style and format their SharePoint list or library. ShareP
 
 Before you respond to the user, before you ask any questions, before you generate any JSON — you MUST first read the formatting knowledge reference file. This file contains the complete technical reference for all available elements, expressions, tokens, CSS classes, Fluent UI icons, actions, and proven patterns. Without it, you will produce incomplete or incorrect formatters.
 
-**Action**: Use the GREP or READ FILE tool to retrieve the contents of:
-
-    Agent Assets > Skills > list-formatting > formatting-knowledge.md
+**Action**: Read the file at [references/formatting-knowledge.md](references/formatting-knowledge.md).
 
 Read the ENTIRE file. Do not skip this step. Do not summarize from memory. The file contains critical details about schemas, element types, operators, special tokens, theme classes, icon names, action types, advanced features, pattern templates, column type quirks, and common pitfalls that you need to produce correct formatters.
 
