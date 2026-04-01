@@ -54,7 +54,8 @@ try { _demoVars = JSON.parse(readFileSync(join(_scriptDir, 'demo.vars.json'), 'u
 const CDP_URL = process.env.CDP_URL ?? 'http://localhost:9222';
 const args = process.argv.slice(2);
 const SCENARIO = args.find(a => !a.startsWith('--')) ?? 'tell-me-about-site';
-const RUN_SECTION = args.includes('--setup') ? 'setup' : args.includes('--reset') ? 'reset' : args.includes('--all') ? 'all' : 'demo';
+const _sectionIdx = args.indexOf('--section');
+const RUN_SECTION = args.includes('--setup') ? 'setup' : args.includes('--reset') ? 'reset' : args.includes('--all') ? 'all' : (_sectionIdx !== -1 && args[_sectionIdx + 1] ? args[_sectionIdx + 1] : 'demo');
 const USE_WIDGET = args.includes('--widget');
 
 // ─── Scenarios ───────────────────────────────────────────────────────────────
@@ -429,7 +430,7 @@ async function main() {
     getActivePage = parsed.getActivePage;
     if (!steps.length) {
       console.error(`No steps found for section "${RUN_SECTION}" in ${scriptPath}.`);
-      console.error('Add a [section: setup], [section: demo], or [section: reset] marker to the script.');
+      console.error('Add a [section: setup], [section: demo], [section: reset], or custom [section: name] marker to the script.');
       process.exit(1);
     }
     if (RUN_SECTION === 'setup' || RUN_SECTION === 'reset') {
@@ -751,7 +752,7 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
             _keyQueueReady = function () {
               if (prevReady) prevReady();
               const idx = _keyQueue.findIndex(k => k === 's' || k === 'b');
-              if (idx !== -1) { nav = _keyQueue.splice(idx, 1)[0]; ac.abort(); }
+              if (idx !== -1) { nav = _keyQueue.splice(idx, 1)[0] === 'b' ? 'back' : 'skip'; ac.abort(); }
             };
             let rawListener = null;
             if (process.stdin.isTTY) {
@@ -760,7 +761,8 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
               rawListener = buf => {
                 const k = buf.toString();
                 if (k === '\x03') process.exit(0);
-                if (k === 's' || k === 'b') { nav = k; ac.abort(); }
+                if (k === 'b') { nav = 'back'; ac.abort(); }
+                else if (k === 's') { nav = 'skip'; ac.abort(); }
               };
               process.stdin.on('data', rawListener);
             }
@@ -786,7 +788,7 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
           isPause: true,
           async run() {
             printContext();
-            waitPrompt('  ▶  Press Enter to continue... ');
+            waitPrompt('  ▶  Enter=continue   b=back   s=skip   ');
             const key = await waitForKey();
             console.log('');
             if (key === 'b') return 'back';
@@ -1097,6 +1099,15 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
 
 // ─── Step runner ─────────────────────────────────────────────────────────────
 
+// Return the index to assign to i so that after the for-loop's i++ the runner
+// lands on the nearest pause step before the current one.  If there is no
+// earlier pause, returns -1 so that i++ brings us back to step 0.
+function prevPauseIndex(steps, currentIndex) {
+  let j = currentIndex - 1;
+  while (j > 0 && !steps[j].isPause) j--;
+  return Math.max(-1, j - 1); // after i++ this becomes j (or 0 if j was 0)
+}
+
 async function runSteps(getPage, steps) {
   const startTime = Date.now();
   widgetUpdate({ startTime, steps: steps.map(s => ({ name: s.name, pause: !!s.isPause })) });
@@ -1118,7 +1129,7 @@ async function runSteps(getPage, steps) {
       await getPage().bringToFront().catch(() => {});
       widgetUpdate({ step: i + 1, total: steps.length, name: step.name, context: '', waiting: false });
       const nav = await step.run();
-      if (nav === 'back') { i = Math.max(-1, i - 2); continue; }
+      if (nav === 'back') { i = prevPauseIndex(steps, i); continue; }
       if (nav === 'skip') continue;
       if (_widgetPauseRequested) {
         _widgetPauseRequested = false;
@@ -1126,7 +1137,7 @@ async function runSteps(getPage, steps) {
         waitPrompt('  \u23f8  Widget pause \u2014 press Enter to continue... ');
         const pk = await waitForKey();
         console.log('');
-        if (pk === 'b') { i = Math.max(-1, i - 2); continue; }
+        if (pk === 'b') { i = prevPauseIndex(steps, i); continue; }
         if (pk === 's') continue;
       }
     } catch (err) {

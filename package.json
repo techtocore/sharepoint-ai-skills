@@ -39,7 +39,16 @@
     "demo:inbox-triage:reset": "node tools/run-demo.mjs tools/scripts/09-inbox-triage/09-inbox-triage.demo --reset",
     "demo:generate-tracker": "node tools/run-demo.mjs tools/scripts/11-generate-tracker/11-generate-tracker.demo",
     "demo:generate-tracker:setup": "node tools/run-demo.mjs tools/scripts/11-generate-tracker/11-generate-tracker.demo --setup",
-    "demo:generate-tracker:reset": "node tools/run-demo.mjs tools/scripts/11-generate-tracker/11-generate-tracker.demo --reset"
+    "demo:generate-tracker:reset": "node tools/run-demo.mjs tools/scripts/11-generate-tracker/11-generate-tracker.demo --reset",
+    "demo:skills-meeting-notes": "node tools/run-demo.mjs tools/scripts/13-skills-meeting-notes/13-skills-meeting-notes.demo",
+    "demo:skills-meeting-notes:setup": "node tools/run-demo.mjs tools/scripts/13-skills-meeting-notes/13-skills-meeting-notes.demo --setup",
+    "demo:skills-meeting-notes:reset": "node tools/run-demo.mjs tools/scripts/13-skills-meeting-notes/13-skills-meeting-notes.demo --reset",
+    "demo:skills-job-postings": "node tools/run-demo.mjs tools/scripts/14-skills-job-postings/14-skills-job-postings.demo",
+    "demo:skills-job-postings:setup": "node tools/run-demo.mjs tools/scripts/14-skills-job-postings/14-skills-job-postings.demo --setup",
+    "demo:skills-job-postings:reset": "node tools/run-demo.mjs tools/scripts/14-skills-job-postings/14-skills-job-postings.demo --reset",
+    "demo:skills-rfp-response": "node tools/run-demo.mjs tools/scripts/15-skills-rfp-response/15-skills-rfp-response.demo",
+    "demo:skills-rfp-response:setup": "node tools/run-demo.mjs tools/scripts/15-skills-rfp-response/15-skills-rfp-response.demo --setup",
+    "demo:skills-rfp-response:reset": "node tools/run-demo.mjs tools/scripts/15-skills-rfp-response/15-skills-rfp-response.demo --reset"
   },
   "dependencies": {
     "playwright": "^1.52.0"
