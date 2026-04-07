@@ -31,7 +31,7 @@
  */
 
 import { chromium } from 'playwright';
-import { readFileSync, mkdirSync, existsSync, statSync } from 'fs';
+import { readFileSync, readdirSync, mkdirSync, existsSync, statSync, writeFileSync } from 'fs';
 import { resolve, dirname, join, basename } from 'path';
 import { spawn } from 'child_process';
 import { get as httpGet, createServer } from 'http';
@@ -62,6 +62,7 @@ const CDP_URL = process.env.CDP_URL ?? 'http://localhost:9222';
 const _sectionIdx = args.indexOf('--section');
 const RUN_SECTION = args.includes('--setup') ? 'setup' : args.includes('--reset') ? 'reset' : args.includes('--all') ? 'all' : (_sectionIdx !== -1 && args[_sectionIdx + 1] ? args[_sectionIdx + 1] : 'demo');
 const USE_WIDGET = args.includes('--widget');
+const RECORD_MODE = args.includes('--record');
 
 // ─── Scenarios ───────────────────────────────────────────────────────────────
 
@@ -131,6 +132,10 @@ async function ensureEdgeRunning() {
 
 let _widgetState = {};
 let _widgetPauseRequested = false;
+
+// OBS recording state (populated by main() in --record mode)
+let _obsConn = null;
+let _obsRecordingStartMs = null;
 
 function widgetUpdate(patch) {
   if (!USE_WIDGET) return;
@@ -455,7 +460,44 @@ async function main() {
     steps = buildSteps(page);
   }
 
+  // In record mode: attempt OBS connection before the demo starts
+  if (RECORD_MODE) {
+    try {
+      const obs = await import('./obs-record.mjs');
+      const obsPassword = process.env.OBS_PASSWORD || _cfg.obsPassword || '';
+      _obsConn = await obs.tryConnectOBS('ws://127.0.0.1:4455', obsPassword);
+      if (_obsConn) {
+        const res = await obs.ensureFullResolution(_obsConn);
+        _obsRecordingStartMs = await obs.startRecording(_obsConn);
+        const resNote = res ? ` (${res})` : '';
+        console.log(`  \x1B[33m⏺  OBS recording started${resNote}\x1B[0m\n`);
+      } else {
+        console.log('  OBS not reachable — screenshot-only mode\n');
+      }
+    } catch (e) {
+      console.log(`  OBS skipped: ${e.message}\n`);
+    }
+  }
+
   await runSteps(getActivePage, steps);
+
+  // Stop OBS recording and patch videoFile into the saved events.json
+  if (RECORD_MODE && _obsConn) {
+    try {
+      const obs = await import('./obs-record.mjs');
+      const videoFile = await obs.stopRecording(_obsConn);
+      obs.disconnectOBS(_obsConn);
+      if (videoFile) {
+        const eventsPath = join(_scriptDir, '..', 'recordings', _scenarioKey, 'events.json');
+        if (existsSync(eventsPath)) {
+          const ev = JSON.parse(readFileSync(eventsPath, 'utf8'));
+          ev.videoFile = videoFile;
+          writeFileSync(eventsPath, JSON.stringify(ev, null, 2));
+          console.log(`  \x1B[32m✓\x1B[0m  OBS recording → ${videoFile}`);
+        }
+      }
+    } catch { /* ignore */ }
+  }
 
   // After demo/all completes, offer to run the reset section if one exists.
   if (SCENARIO.endsWith('.demo') && (RUN_SECTION === 'demo' || RUN_SECTION === 'all')) {
@@ -564,6 +606,12 @@ function tellMeAboutSiteSteps(page) {
  *   [confirm: message]        destructive action — warn presenter and wait for
  *                             confirmation that they've clicked the button in the UI
  *   [screenshot: path]        save a screenshot
+ *   [enable-site-feature: Name]  navigate to ManageFeatures.aspx?Scope=Site and activate
+ *                             the named feature if not already active, then return.
+ *                             Preferred: [enable-site-feature: Name | GUID] uses the
+ *                             REST API directly (/_api/site/features/add) — more reliable
+ *   [upload-skill: Skills/name]  upload a local skill folder (SKILL.md + any subdirs) to
+ *                             the AgentAssets library folder derived from the current page URL
  */
 function parseScript(src, page, section = 'demo', externalVars = {}) {
   // Pre-process: collapse multi-line [command: ...] blocks into single lines.
@@ -935,6 +983,27 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
         };
       }
 
+      case 'scene': {
+        const sceneName = arg;
+        return {
+          name: `Scene: ${sceneName}`,
+          async run() {
+            if (!_obsConn) {
+              console.log(`    OBS not connected — [scene: ${sceneName}] skipped.`);
+              return;
+            }
+            try {
+              const obs = await import('./obs-record.mjs');
+              await obs.switchScene(_obsConn, sceneName);
+              await activePage.waitForTimeout(300); // let the transition settle
+              console.log(`    Scene → ${sceneName}`);
+            } catch (e) {
+              console.warn(`    Scene switch failed: ${e.message}`);
+            }
+          },
+        };
+      }
+
       case 'screenshot': {
         const screenshotPath = resolve(_scriptDir, '..', arg || 'tools/screenshots/demo.png');
         return {
@@ -1206,6 +1275,287 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
         };
       }
 
+      case 'upload-skill': {
+        // Optional subfolder within the library: [upload-skill: Skills/name | Subfolder]
+        const pipeIdx = arg.indexOf('|');
+        const skillLocalPath = resolve(_scriptDir, '..', (pipeIdx === -1 ? arg : arg.slice(0, pipeIdx)).trim());
+        const skillName = basename(skillLocalPath);
+        const skillSubfolder = pipeIdx === -1 ? null : arg.slice(pipeIdx + 1).trim() || null;
+
+        // Collect all files under the skill directory, returning relative paths.
+        function collectSkillFiles(dir, rel = '') {
+          const results = [];
+          for (const entry of readdirSync(dir, { withFileTypes: true })) {
+            const entryRel = rel ? `${rel}/${entry.name}` : entry.name;
+            if (entry.isDirectory()) {
+              results.push(...collectSkillFiles(join(dir, entry.name), entryRel));
+            } else {
+              results.push({ rel: entryRel, abs: join(dir, entry.name) });
+            }
+          }
+          return results;
+        }
+
+        return {
+          name: `Upload skill: ${skillName}`,
+          async run() {
+            printContext();
+
+            if (!existsSync(skillLocalPath)) {
+              console.log(`  ⚠  Skill folder not found: ${skillLocalPath}`);
+              return;
+            }
+
+            const files = collectSkillFiles(skillLocalPath);
+
+            // Derive the AgentAssets library server-relative path from the current page URL.
+            const urlObj = new URL(activePage.url());
+            const origin = urlObj.origin;
+            const rootFolderParam = urlObj.searchParams.get('RootFolder') ?? urlObj.searchParams.get('id');
+            const libraryFolder = rootFolderParam
+              ? decodeURIComponent(rootFolderParam).replace(/\/$/, '')
+              : decodeURIComponent(urlObj.pathname.replace(/\/Forms\/[^/]*$/, '').replace(/\/$/, ''));
+
+            // Prefer _spPageContextInfo for the site URL; fall back to deriving it from the
+            // server-relative library path so we always get the correct sub-site (not root).
+            const webUrl = await activePage.evaluate(() => window._spPageContextInfo?.webAbsoluteUrl).catch(() => null)
+              ?? (() => {
+                const m = libraryFolder.match(/^\/(sites|teams)\/[^/]+/);
+                return m ? `${origin}${m[0]}` : origin;
+              })();
+
+            // Fetch form digest once for all operations.
+            const digest = await activePage.evaluate(async (url) => {
+              const r = await fetch(`${url}/_api/contextinfo`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json;odata=verbose' },
+              }).catch(() => null);
+              if (!r?.ok) return null;
+              const json = await r.json().catch(() => null);
+              return json?.d?.GetContextWebInformation?.FormDigestValue ?? null;
+            }, webUrl);
+
+            if (!digest) {
+              console.log('  ⚠  Could not get form digest. Skipping skill upload.');
+              return;
+            }
+
+            // Collect unique folders to create (in order — parents before children).
+            // If a subfolder is specified (e.g. "Skills"), insert it between the library
+            // root and the skill folder, creating it first if needed.
+            const skillBase = skillSubfolder
+              ? `${libraryFolder}/${skillSubfolder}`
+              : libraryFolder;
+            const foldersNeeded = skillSubfolder
+              ? [`${libraryFolder}/${skillSubfolder}`, `${skillBase}/${skillName}`]
+              : [`${libraryFolder}/${skillName}`];
+            for (const { rel } of files) {
+              const parts = rel.split('/');
+              let path = `${skillBase}/${skillName}`;
+              for (let i = 0; i < parts.length - 1; i++) {
+                path += `/${parts[i]}`;
+                if (!foldersNeeded.includes(path)) foldersNeeded.push(path);
+              }
+            }
+
+            // Ensure each folder exists (409 = already exists → treat as ok).
+            for (const folderPath of foldersNeeded) {
+              const parentFolder = folderPath.slice(0, folderPath.lastIndexOf('/'));
+              const folderName   = folderPath.slice(folderPath.lastIndexOf('/') + 1);
+              const displayPath  = folderPath.replace(`${libraryFolder}/`, '');
+              process.stdout.write(`    Ensuring folder "${displayPath}"... `);
+              const r = await activePage.evaluate(async ({ webUrl, parent, fullPath, digest }) => {
+                const escapedParent = parent.replace(/'/g, "''");
+                const resp = await fetch(
+                  `${webUrl}/_api/web/GetFolderByServerRelativeUrl('${escapedParent}')/Folders`,
+                  {
+                    method: 'POST',
+                    headers: {
+                      'Accept': 'application/json;odata=verbose',
+                      'Content-Type': 'application/json;odata=verbose',
+                      'X-RequestDigest': digest,
+                    },
+                    body: JSON.stringify({
+                      '__metadata': { 'type': 'SP.Folder' },
+                      'ServerRelativeUrl': fullPath,
+                    }),
+                  }
+                ).catch(() => ({ ok: false, status: 0 }));
+                return { ok: resp.ok, status: resp.status };
+              }, { webUrl, parent: parentFolder, fullPath: folderPath, digest });
+              console.log(r.ok || r.status === 409 ? 'ok.' : `failed (HTTP ${r.status}).`);
+            }
+
+            // Upload each file.
+            for (const { rel, abs } of files) {
+              const relDir = rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '';
+              const uploadFolder = relDir ? `${skillBase}/${skillName}/${relDir}` : `${skillBase}/${skillName}`;
+              const fileName = basename(rel);
+              process.stdout.write(`    Uploading "${rel}"... `);
+              const fileBase64 = readFileSync(abs).toString('base64');
+              const r = await activePage.evaluate(async ({ webUrl, folder, file, b64, digest }) => {
+                const binary = atob(b64);
+                const buf = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) buf[i] = binary.charCodeAt(i);
+                const escaped = folder.replace(/'/g, "''");
+                const escapedFile = file.replace(/'/g, "''");
+                const resp = await fetch(
+                  `${webUrl}/_api/web/GetFolderByServerRelativeUrl('${escaped}')/Files/add(url='${escapedFile}',overwrite=true)`,
+                  {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json;odata=verbose', 'X-RequestDigest': digest },
+                    body: buf.buffer,
+                  }
+                ).catch(() => ({ ok: false, status: 0 }));
+                return { ok: resp.ok, status: resp.status };
+              }, { webUrl, folder: uploadFolder, file: fileName, b64: fileBase64, digest });
+              console.log(r.ok ? 'done.' : `failed (HTTP ${r.status}).`);
+            }
+          },
+        };
+      }
+
+      case 'enable-site-feature': {
+        // Accepts "Feature Name" (uses ManageFeatures.aspx UI) or
+        // "Feature Name | GUID" (uses /_api/site/features/add — preferred when GUID is known).
+        const pipeIdx = arg.indexOf('|');
+        const featureName = (pipeIdx === -1 ? arg : arg.slice(0, pipeIdx)).trim();
+        const featureGuid = pipeIdx === -1 ? null : arg.slice(pipeIdx + 1).trim();
+        return {
+          name: `Enable site feature: ${featureName}`,
+          async run() {
+            printContext();
+            const currentUrl = activePage.url();
+            process.stdout.write(`    Checking site feature "${featureName}"... `);
+
+            if (featureGuid) {
+              // REST API path — derive the site URL from the current page's managed path
+              // so it works even when _spPageContextInfo is absent (e.g. on AgentAssets pages).
+              const siteUrl = await activePage.evaluate((guid) => {
+                const spUrl = window._spPageContextInfo?.siteAbsoluteUrl;
+                if (spUrl) return spUrl;
+                const m = window.location.pathname.match(/^\/(sites|teams)\/[^/]+/);
+                return window.location.origin + (m ? m[0] : '');
+              }, featureGuid);
+
+              const result = await activePage.evaluate(async ({ siteUrl, guid }) => {
+                // Check if already active
+                const checkResp = await fetch(
+                  `${siteUrl}/_api/site/features?$filter=DefinitionId eq guid'${guid}'`,
+                  { headers: { Accept: 'application/json;odata=verbose' } }
+                ).catch(() => null);
+                if (checkResp?.ok) {
+                  const cj = await checkResp.json().catch(() => null);
+                  if (cj?.d?.results?.length) return { status: 'already-active' };
+                }
+
+                // Activate via REST
+                const dr = await fetch(`${siteUrl}/_api/contextinfo`, {
+                  method: 'POST',
+                  headers: { Accept: 'application/json;odata=verbose', 'Content-Type': 'application/json;odata=verbose' },
+                }).catch(() => null);
+                if (!dr?.ok) return { status: 'no-digest' };
+                const dj = await dr.json().catch(() => null);
+                const digest = dj?.d?.GetContextWebInformation?.FormDigestValue;
+                if (!digest) return { status: 'no-digest' };
+
+                const resp = await fetch(`${siteUrl}/_api/site/features/add`, {
+                  method: 'POST',
+                  headers: {
+                    Accept: 'application/json;odata=verbose',
+                    'Content-Type': 'application/json;odata=verbose',
+                    'X-RequestDigest': digest,
+                  },
+                  body: JSON.stringify({ featureId: guid, force: true }),
+                }).catch(() => ({ ok: false, status: 0 }));
+
+                if (resp.ok) return { status: 'activated' };
+                const body = await resp.text().catch(() => '');
+                // A 500 with "already" in body means already active
+                if (resp.status === 500 && /already/i.test(body)) return { status: 'already-active' };
+                return { status: 'error', httpStatus: resp.status, body: body.slice(0, 200) };
+              }, { siteUrl, guid: featureGuid });
+
+              if (result.status === 'already-active') {
+                console.log('already active.');
+              } else if (result.status === 'activated') {
+                console.log('activated.');
+                await activePage.waitForTimeout(2000);
+              } else if (result.status === 'no-digest') {
+                console.log('could not get form digest.');
+                console.log(`  ⚠  Activate "${featureName}" manually, then press Enter.`);
+                waitPrompt('  ▶  Press Enter to continue... ');
+                await waitForKey();
+              } else {
+                console.log(`failed (HTTP ${result.httpStatus}).`);
+                console.log(`  ⚠  ${result.body}`);
+                console.log(`  ⚠  Activate "${featureName}" manually, then press Enter.`);
+                waitPrompt('  ▶  Press Enter to continue... ');
+                await waitForKey();
+              }
+              return;
+            }
+
+            // UI path — navigate to ManageFeatures.aspx and click the Activate button.
+            // ManageFeatures.aspx uses <input type="button" value="Activate"> (ASP.NET postback),
+            // so we find the element via DOM and trigger a proper Playwright click on it.
+            const webUrl = await activePage.evaluate(() =>
+              window._spPageContextInfo?.webAbsoluteUrl
+            ).catch(() => null) ?? (() => {
+              const u = new URL(currentUrl);
+              const m = u.pathname.match(/^\/(sites|teams)\/[^/]+/);
+              return `${u.origin}${m ? m[0] : ''}`;
+            })();
+            const featuresUrl = `${webUrl.replace(/\/$/, '')}/_layouts/15/ManageFeatures.aspx?Scope=Site`;
+
+            await activePage.goto(featuresUrl, { waitUntil: 'load', timeout: 60000 });
+            await activePage.waitForTimeout(2000);
+
+            // Check feature state by inspecting button values (not textContent — inputs use .value).
+            const featureState = await activePage.evaluate((name) => {
+              const rows = Array.from(document.querySelectorAll('tr'));
+              for (const row of rows) {
+                if (!row.textContent.includes(name)) continue;
+                const btns = Array.from(row.querySelectorAll('a, button, input[type="button"]'));
+                const label = el => (el.value || el.textContent || '').trim();
+                const hasDeactivate = btns.some(el => /deactivate/i.test(label(el)));
+                const activateEl = btns.find(el => /^activate$/i.test(label(el)));
+                return { found: true, active: hasDeactivate, hasActivate: !!activateEl };
+              }
+              return { found: false };
+            }, featureName);
+
+            if (!featureState.found) {
+              console.log('not found on features page.');
+              waitPrompt(`  ▶  Activate "${featureName}" manually, then press Enter... `);
+              await waitForKey();
+            } else if (featureState.active) {
+              console.log('already active.');
+            } else if (!featureState.hasActivate) {
+              console.log('no Activate button found.');
+              waitPrompt(`  ▶  Activate "${featureName}" manually, then press Enter... `);
+              await waitForKey();
+            } else {
+              console.log('activating...');
+              process.stdout.write(`    Activating "${featureName}"... `);
+              // Use Playwright locator to click the input button properly (triggers postback).
+              const activateBtn = activePage.locator('tr')
+                .filter({ hasText: featureName })
+                .locator('input[type="button"]')
+                .filter({ hasAttribute: 'value' })
+                .first();
+              await activateBtn.click({ timeout: 10000 });
+              await activePage.waitForLoadState('load', { timeout: 30000 }).catch(() => {});
+              await activePage.waitForTimeout(2000);
+              console.log('done.');
+            }
+
+            await activePage.goto(currentUrl, { waitUntil: 'load', timeout: 60000 });
+            await activePage.waitForTimeout(2000);
+          },
+        };
+      }
+
       default:
         return {
           name: `[unknown command: ${cmd}]`,
@@ -1219,7 +1569,12 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
 
   for (const block of sectionBlocks) {
     if (block.type === 'command') {
-      steps.push(commandToStep(block.cmd, block.arg, flushContext()));
+      const ctx = flushContext();
+      const step = commandToStep(block.cmd, block.arg, ctx);
+      if (step) {
+        step.context = ctx.filter(b => b.type === 'talking' || b.type === 'comment').map(b => b.value).join('\n\n');
+      }
+      steps.push(step);
     } else {
       pendingContext.push(block);
     }
@@ -1227,7 +1582,12 @@ function parseScript(src, page, section = 'demo', externalVars = {}) {
 
   // Any trailing talking points with no command → implicit pause
   if (pendingContext.length) {
-    steps.push(commandToStep('pause', '', flushContext()));
+    const ctx = flushContext();
+    const step = commandToStep('pause', '', ctx);
+    if (step) {
+      step.context = ctx.filter(b => b.type === 'talking' || b.type === 'comment').map(b => b.value).join('\n\n');
+    }
+    steps.push(step);
   }
 
   return { steps, getActivePage: () => activePage };
@@ -1256,15 +1616,49 @@ async function runSteps(getPage, steps) {
   });
   console.log('');
 
+  if (RECORD_MODE) console.log('  \x1B[33m⏺  RECORD MODE — pauses auto-advance\x1B[0m\n');
+
+  // Set up recording directory and frames folder up front
+  let recordDir;
+  if (RECORD_MODE) {
+    recordDir = join(_scriptDir, '..', 'recordings', _scenarioKey);
+    mkdirSync(join(recordDir, 'frames'), { recursive: true });
+  }
+
+  const recordedSteps = [];
+
   for (let i = 0; i < steps.length; i++) {
     const step = steps[i];
     const elapsed = formatElapsed(Date.now() - startTime);
     console.log(`\x1B[2m[${elapsed}]\x1B[0m \x1B[1mStep ${i + 1}/${steps.length}:\x1B[0m ${step.name}`);
 
+    const stepStartMs = Date.now() - startTime;
+
     try {
       await getPage().bringToFront().catch(() => {});
       widgetUpdate({ step: i + 1, total: steps.length, name: step.name, context: '', waiting: false });
       const nav = await step.run();
+
+      if (RECORD_MODE) {
+        const frameNum = String(i + 1).padStart(3, '0');
+        const screenshotFilename = `frames/step-${frameNum}.png`;
+        await getPage().screenshot({ path: join(recordDir, screenshotFilename) }).catch(() => {});
+
+        const endMs = Date.now() - startTime;
+        recordedSteps.push({
+          name: step.name,
+          talkingPoints: step.context || '',
+          isPause: !!step.isPause,
+          startMs: stepStartMs,
+          endMs,
+          durationMs: endMs - stepStartMs,
+          // Pause steps auto-advance instantly — give them a display duration for the slideshow
+          ...(step.isPause && { displayDurationMs: 5000 }),
+          // Path relative to Remotion's public/ root
+          screenshot: `recordings/${_scenarioKey}/${screenshotFilename}`,
+        });
+      }
+
       if (nav === 'back') { i = prevPauseIndex(steps, i); continue; }
       if (nav === 'skip') continue;
       if (nav && nav.startsWith('g') && /^\d+$/.test(nav.slice(1))) {
@@ -1298,6 +1692,20 @@ async function runSteps(getPage, steps) {
 
   const totalTime = formatElapsed(Date.now() - startTime);
   console.log(`\nDemo complete in ${totalTime}.`);
+
+  if (RECORD_MODE && recordedSteps.length) {
+    const eventsPath = join(recordDir, 'events.json');
+    writeFileSync(eventsPath, JSON.stringify({
+      demoName: _scenarioKey,
+      recordedAt: new Date().toISOString(),
+      // videoOffsetMs: how far into the OBS recording the demo steps begin.
+      // Used by DemoVideo in Remotion to sync overlays to the video.
+      ...(_obsRecordingStartMs && { videoOffsetMs: startTime - _obsRecordingStartMs }),
+      steps: recordedSteps,
+    }, null, 2));
+    console.log(`\n  \x1B[32m✓\x1B[0m  Events saved → ${eventsPath}`);
+    console.log(`       Copy to C:\\repos\\remotion\\public\\recordings\\ then run: npm run studio`);
+  }
 }
 
 
@@ -1327,6 +1735,7 @@ if (!process.stdin.isTTY) {
 }
 
 async function waitForKey() {
+  if (RECORD_MODE) return 'enter';
   widgetUpdate({ waiting: true });
 
   let key;
@@ -1586,6 +1995,29 @@ async function slowType(locator, text, chunkSize = TYPE_CHUNK, delayMs = TYPE_DE
 async function waitForCopilotResponse(page, chatFrame, timeoutMs = 300000, signal = null) {
   const aborted = () => signal?.aborted ?? false;
   const deadline = Date.now() + timeoutMs;
+
+  // If the input still has text, the prompt wasn't submitted — press Enter to re-submit.
+  try {
+    const inputSelectors = [
+      '[placeholder*="Ask"]',
+      '[placeholder*="Message"]',
+      'textarea',
+      '[contenteditable="true"]',
+      '[role="textbox"]',
+    ];
+    for (const sel of inputSelectors) {
+      const loc = chatFrame.locator(sel).first();
+      if (await loc.isVisible({ timeout: 500 }).catch(() => false)) {
+        const val = await loc.inputValue().catch(() => null) ?? await loc.textContent().catch(() => '');
+        if (val && val.trim().length > 0) {
+          console.log('\n    Input still has text — re-submitting...');
+          await loc.press('Enter');
+          await page.waitForTimeout(500);
+        }
+        break;
+      }
+    }
+  } catch { /* best-effort */ }
 
   const stopSelectors = [
     '[aria-label*="Stop"]',

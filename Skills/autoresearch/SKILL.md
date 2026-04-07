@@ -1,21 +1,21 @@
 ---
 name: "autoresearch"
-description: "Optimize any Knowledge Agent skill by iteratively running it against test inputs, scoring outputs with binary evals, mutating the prompt to fix failures, and keeping improvements. Adapts Karpathy's autoresearch methodology to KA's multi-turn conversation architecture."
+description: "Optimize any AI in SharePoint skill by iteratively running it against test inputs, scoring outputs with binary evals, mutating the prompt to fix failures, and keeping improvements. Adapts Karpathy's autoresearch methodology to AI in SharePoint's multi-turn conversation architecture."
 metadata:
   author: "Marcus Markiewicz"
   version: "1.0"
   license: "MIT"
 ---
 
-# Autoresearch for Knowledge Agent Skills
+# Autoresearch for AI in SharePoint Skills
 
-This skill adapts autonomous experimentation loops (Karpathy-style autoresearch) to the Knowledge Agent. It doesn't rewrite the skill from scratch, but instwead runs it repeatedly, scoring every output, to improve it. Instead of spawning sub-agents on a local machine, we work within KA's multi-turn conversation using `load_skill` and `create_skill` as our read/write primitives.
+This skill adapts autonomous experimentation loops (Karpathy-style autoresearch) to AI in SharePoint. It doesn't rewrite the skill from scratch, but instwead runs it repeatedly, scoring every output, to improve it. Instead of spawning sub-agents on a local machine, we work within AI in SharePoint's multi-turn conversation using `load_skill` and `create_skill` as our read/write primitives.
 
 ---
 
 ## The Core Job
 
-Take any existing KA skill, define what "good output" looks like as binary yes/no checks, then run an iterative loop that:
+Take any existing AI in SharePoint skill, define what "good output" looks like as binary yes/no checks, then run an iterative loop that:
 
 1. Applies the skill's instructions to test inputs and generates outputs
 2. Scores every output against eval criteria (binary pass/fail)
@@ -41,7 +41,7 @@ Take any existing KA skill, define what "good output" looks like as binary yes/n
    If the user only provides happy-path inputs, push back: "What's the hardest input this skill has to handle?"
 
 3. **Eval criteria** — What 3–6 binary yes/no checks define a good output? (see [references/eval-guide.md](references/eval-guide.md) for how to write good evals)
-4. **Runs per experiment** — How many times should we apply the skill per mutation? Default: 3. (In KA, each run is a conversation turn, so 3 balances signal vs speed.)
+4. **Runs per experiment** — How many times should we apply the skill per mutation? Default: 3. (In AI in SharePoint, each run is a conversation turn, so 3 balances signal vs speed.)
 5. **Budget cap** — Optional. Max number of experiment cycles. Default: no cap (runs until user stops or score ceiling hit).
 
 ---
@@ -113,7 +113,7 @@ Run the skill AS-IS before changing anything. This is Experiment #0.
 
 ## How to Score
 
-Scoring is the most critical step. Because KA doesn't have separate scoring agents, you must be rigorous about self-scoring.
+Scoring is the most critical step. Because AI in SharePoint doesn't have separate scoring agents, you must be rigorous about self-scoring.
 
 **For each output, score every eval:**
 

@@ -51,6 +51,7 @@
     "demo:skills-rfp-response:reset": "node tools/run-demo.mjs tools/scripts/15-skills-rfp-response/15-skills-rfp-response.demo --reset"
   },
   "dependencies": {
+    "obs-websocket-js": "^5.0.8",
     "playwright": "^1.52.0"
   }
 }

@@ -35,6 +35,90 @@ CDP_URL=http://localhost:9223 node tools/run-demo.mjs tools/scripts/site-overvie
 
 ---
 
+## Record mode (automated end-to-end run for video generation)
+
+Add `--record` to run the demo fully unattended — all `[pause]` steps auto-advance without waiting for a keypress. The runner executes every step, waits for all Copilot responses to complete, and writes a timing log to disk.
+
+```
+node tools/run-demo.mjs tools/scripts/04-comparison-report/04-comparison-report.demo --record
+```
+
+**What `--record` does:**
+- Skips all `[pause]` waits — the demo runs straight through from start to finish
+- All automated steps (`[navigate]`, `[open-chat]`, `[prompt]`, `[wait]`, `[screenshot]`) still execute normally
+- Writes `recordings/<demo-name>/events.json` with per-step timing data and talking points
+
+**Claude Code is not required.** This is a plain Node.js command you can run in any terminal. Claude Code was used to build the Remotion video project (`C:\repos\remotion`) but has no role in day-to-day recording.
+
+**Output example** (`recordings/04-comparison-report/events.json`):
+```json
+{
+  "demoName": "04-comparison-report",
+  "steps": [
+    { "name": "Navigate to …", "durationMs": 7766, "talkingPoints": "Legal just sent over the revised MSA…", "isPause": false },
+    { "name": "Wait for Copilot response", "durationMs": 51811, "talkingPoints": "", "isPause": false },
+    …
+  ]
+}
+```
+
+### Steps that need a human in record mode
+
+`--record` cannot replace human interaction for:
+
+| Command | Behavior in `--record` |
+|---|---|
+| `[pause]` | **Auto-advances** (this is the whole point) |
+| `[confirm]` | Auto-advances — the UI action is skipped. Run setup manually first if confirm steps are required. |
+| `[upload]` | Auto-advances — file won't be attached. Use `[upload-library]` instead if possible. |
+| `[login-if-needed]` | Auto-advances — requires you to already be signed in before running. |
+
+**Recommendation:** run `--setup` manually once before doing a `--record` run so the environment is ready.
+
+### What `--record` captures
+
+Every step in the demo produces a screenshot saved to `recordings/<demo-name>/frames/step-NNN.png`, plus an `events.json` file with step timing. If OBS is connected, the full-motion video path is also captured (see OBS section below).
+
+### OBS WebSocket integration (optional — for smooth video output)
+
+If OBS Studio is open and its WebSocket server is enabled, `--record` will automatically start and stop an OBS recording alongside the demo run.
+
+**One-time OBS setup:**
+1. Open OBS → Tools → WebSocket Server Settings
+2. Check **Enable WebSocket Server** (port 4455, password optional)
+3. Configure a scene capturing the Edge browser window
+
+**Running with OBS:**
+```
+# With password (set OBS_PASSWORD env var):
+OBS_PASSWORD=yourpassword node tools/run-demo.mjs tools/scripts/04-comparison-report/04-comparison-report.demo --record
+
+# Without password:
+node tools/run-demo.mjs tools/scripts/04-comparison-report/04-comparison-report.demo --record
+```
+
+The runner will print `⏺ OBS recording started` if it connects. After the demo, `events.json` gains a `videoFile` field with the absolute path to the recording, and `videoOffsetMs` for sync. If OBS is not running, the run proceeds normally with screenshots only.
+
+### Generating a video from the recording
+
+See `C:\repos\remotion` for the Remotion video project. Two compositions are available:
+
+| Composition | Source | How to use |
+|---|---|---|
+| `*-slideshow` | Step screenshots | Works immediately after `--record` |
+| `*-video` | OBS full-motion recording | Also requires OBS connected during `--record` |
+
+**Steps:**
+1. Copy `recordings/<demo-name>/` into `C:\repos\remotion\public\recordings\<demo-name>\`
+2. For the video composition: also copy the OBS recording file to `public/recordings/<demo-name>/recording.mp4`
+3. In `src/Root.tsx`, add your demo (follow the pattern for `04-comparison-report`)
+4. Run `npm run studio` (from `C:\repos\remotion`) to preview in the browser
+5. Run `npm run render` to produce a `.mp4`
+
+**Claude Code is not required** for any of these steps once the Remotion project is set up.
+
+---
+
 ## Widget mode (full-screen presentations)
 
 Add `--widget` to open a small floating controller window alongside the demo browser.
@@ -135,6 +219,7 @@ Talking points are word-wrapped at 72 characters and printed to the terminal bef
 | `[upload: path]` | Open the Attach menu in the chat input, then wait for the presenter to select the local file in the OS dialog (the OS file picker cannot be automated) |
 | `[confirm: message]` | Destructive action required in the browser — shows a warning box and waits for Enter after the user has completed the action |
 | `[screenshot: path]` | Save a screenshot to the given path |
+| `[scene: Name]` | Switch the OBS program scene (e.g. `[scene: Zoom SPAI]`). No-op if OBS is not connected. |
 
 ---
 

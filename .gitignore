@@ -35,6 +35,10 @@ tools/result-screenshot.png
 tools/screenshots/
 tools/step*.png
 
+# Demo recordings — contain personal/client screen captures, never commit
+tools/recordings/
+recordings/
+
 # Local demo tool config/vars — not committed so each machine can tune its own settings
 tools/demo.config.json
 tools/demo.vars.json

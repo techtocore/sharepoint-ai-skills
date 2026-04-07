@@ -1,6 +1,6 @@
-# Eval Guide for Knowledge Agent Skills
+# Eval Guide for AI in SharePoint Skills
 
-How to write eval criteria that actually improve your KA skills instead of giving you false confidence.
+How to write eval criteria that actually improve your AI in SharePoint skills instead of giving you false confidence.
 
 ---
 
@@ -8,7 +8,7 @@ How to write eval criteria that actually improve your KA skills instead of givin
 
 Every eval must be a **yes/no question**. Not a scale. Not a vibe check. Binary.
 
-Why: Scales compound variability. If you have 4 evals scored 1–7, your total score has massive variance across runs. Binary evals give you a reliable signal — especially important in KA where the same agent both generates and scores (no sub-agent isolation).
+Why: Scales compound variability. If you have 4 evals scored 1–7, your total score has massive variance across runs. Binary evals give you a reliable signal — especially important in AI in SharePoint where the same agent both generates and scores (no sub-agent isolation).
 
 ---
 
@@ -90,10 +90,10 @@ If eval 1 is "Does the response address the question?" and eval 3 is "Is the res
 
 ---
 
-## KA-Specific Considerations
+## AI in SharePoint-Specific Considerations
 
 ### Self-Scoring Bias
-In Claude Code autoresearch, separate agents do execution and scoring. In KA, the same agent does both. This creates a bias toward passing.
+In Claude Code autoresearch, separate agents do execution and scoring. In AI in SharePoint, the same agent does both. This creates a bias toward passing.
 
 **Mitigations:**
 1. **Score before analyzing.** Write PASS/FAIL for each eval FIRST, then analyze patterns. Don't let the analysis influence the scoring.
@@ -102,7 +102,7 @@ In Claude Code autoresearch, separate agents do execution and scoring. In KA, th
 4. **Use concrete, greppable evals.** Evals like "contains zero TODO placeholders" are harder to mis-score than "is the code well-structured."
 
 ### Multi-Turn State
-KA skills run across conversation turns, not in a single execution. This means:
+AI in SharePoint skills run across conversation turns, not in a single execution. This means:
 - Eval results from early turns may fade from context in long conversations
 - Keep running score summaries compact and structured
 - Use the structured results format defined in the main skill to maintain state
@@ -119,7 +119,7 @@ Evals are only as good as the inputs they're tested against.
 2. **1–2 edge cases** — Inputs that stress the skill: very short, very long, ambiguous, unusual format, or minimal context.
 3. **1 adversarial input** — Something that commonly trips the skill up or that you *know* is hard.
 
-**Examples by KA skill type:**
+**Examples by AI in SharePoint skill type:**
 
 | Skill type | Happy path | Edge case | Adversarial |
 |---|---|---|---|
