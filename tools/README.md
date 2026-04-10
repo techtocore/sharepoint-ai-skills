@@ -81,23 +81,37 @@ Every step in the demo produces a screenshot saved to `recordings/<demo-name>/fr
 
 ### OBS WebSocket integration (optional — for smooth video output)
 
-If OBS Studio is open and its WebSocket server is enabled, `--record` will automatically start and stop an OBS recording alongside the demo run.
+Requires **OBS Studio 28 or later** (28+ has the WebSocket server built in).
+
+If OBS is open and its WebSocket server is enabled, `--record` will automatically start and stop an OBS recording alongside the demo run.
 
 **One-time OBS setup:**
 1. Open OBS → Tools → WebSocket Server Settings
 2. Check **Enable WebSocket Server** (port 4455, password optional)
-3. Configure a scene capturing the Edge browser window
+3. Create a scene with a **Window Capture** source pointed at the Edge browser window. Name the scene whatever you like — use `[scene: Name]` in your `.demo` scripts to switch to it.
+
+**Setting the OBS password (persistent):**
+
+Add `obsPassword` to `tools/demo.config.json` so you don't have to set it every time:
+```json
+{
+  "obsPassword": "yourpassword"
+}
+```
+
+Or pass it inline as an env var for a one-off run:
+```
+OBS_PASSWORD=yourpassword node tools/run-demo.mjs tools/scripts/04-comparison-report/04-comparison-report.demo --record
+```
+
+If no password is set, the runner connects without one (works when OBS has no password configured).
 
 **Running with OBS:**
 ```
-# With password (set OBS_PASSWORD env var):
-OBS_PASSWORD=yourpassword node tools/run-demo.mjs tools/scripts/04-comparison-report/04-comparison-report.demo --record
-
-# Without password:
 node tools/run-demo.mjs tools/scripts/04-comparison-report/04-comparison-report.demo --record
 ```
 
-The runner will print `⏺ OBS recording started` if it connects. After the demo, `events.json` gains a `videoFile` field with the absolute path to the recording, and `videoOffsetMs` for sync. If OBS is not running, the run proceeds normally with screenshots only.
+The runner prints `⏺ OBS recording started (WxH @ Nfps)` when it connects — it also auto-corrects any output downscaling so the recording matches your canvas resolution. After the demo, `events.json` gains a `videoFile` field with the absolute path to the recording, and `videoOffsetMs` for Remotion sync. If OBS is not running, the run proceeds normally with screenshots only.
 
 ### Generating a video from the recording
 
