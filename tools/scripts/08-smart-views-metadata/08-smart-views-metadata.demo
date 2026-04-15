@@ -1,0 +1,106 @@
+# Smart Views From Metadata
+# Once metadata exists, AI can create views, generate reports, and answer cross-library questions.
+
+[var: SITE = https://contoso.sharepoint.com/sites/demo/]
+[var: LIBRARY = ${SITE}Project%20Documents/]
+[category: Documents & Files]
+
+[section: setup]
+
+[navigate: ${SITE}]
+
+[open-chat]
+
+[new-chat]
+
+[prompt: Create a document library called "Project Documents" if it doesn't already exist. Add these columns if they don't exist: Department (Choice: Marketing, Finance, HR, Legal, Engineering), Document Type (Choice: Policy, Contract, Report, Presentation, Proposal), Confidentiality (Choice: Public, Internal, Confidential, Restricted), Summary (Multiple lines of text).]
+
+[wait]
+
+[sleep: 5s]
+
+[assert: ${LIBRARY}]
+
+[navigate: ${LIBRARY}]
+
+[upload-library: tools/scripts/08-smart-views-metadata/assets/HR-Policy.docx]
+[upload-library: tools/scripts/08-smart-views-metadata/assets/Marketing-Proposal.docx]
+[upload-library: tools/scripts/08-smart-views-metadata/assets/Legal-Contract.docx]
+[upload-library: tools/scripts/08-smart-views-metadata/assets/Finance-Report.docx]
+[upload-library: tools/scripts/08-smart-views-metadata/assets/NDA-Agreement.docx]
+[upload-library: tools/scripts/08-smart-views-metadata/assets/Salary-Bands.docx]
+
+[new-chat]
+
+[prompt: Read each file in this library. For every file, fill in the Department, Document Type, Confidentiality, and Summary columns based on the file's content.]
+
+[wait]
+
+[new-chat]
+
+Confirm "Project Documents" library exists with Department, Document Type,
+Confidentiality, and Summary columns. Confirm 6 files have populated
+metadata columns and no "Confidential Review" view exists in the view
+switcher.
+
+[pause]
+
+[section: demo]
+
+[navigate: ${LIBRARY}]
+
+In the last demo we tagged everything with metadata. Now let's put that
+metadata to work. We're going to create views, run analysis, and generate
+policy recommendations — all from the data that didn't exist five minutes ago.
+
+[pause]
+
+[open-chat]
+
+[prompt: Create a view called "Confidential Review" that shows only files marked Confidential or Restricted, sorted by Department.]
+
+[wait]
+
+A new view has been created. Switch to it and point out that only the sensitive
+files appear — salary bands, NDA, and security playbook. Leadership can now
+audit sensitive documents in one click.
+
+[pause]
+
+Now let's ask a question that requires understanding the whole library.
+
+[prompt: Which departments have the most documents? Are any departments missing representation in this library?]
+
+[wait]
+
+Copilot did a gap analysis on document coverage. Marketing has 2, everything
+else has 1, and it flagged missing departments — Sales, Finance, Operations.
+That's an insight no search query would give you.
+
+[pause]
+
+One more. Let's have it draft a policy from the metadata.
+
+[prompt: Based on the confidentiality levels in this library, draft a one-paragraph access policy recommendation.]
+
+[wait]
+
+It drafted an access policy: Public files go to the company portal, Internal
+stays in the team site, Confidential requires explicit sharing, Restricted
+needs a separate permissions group. Metadata in, intelligence out. That's
+the whole story.
+
+[pause]
+
+[screenshot: tools/screenshots/08-smart-views-final.png]
+
+[section: reset]
+
+Delete the "Confidential Review" view created during the demo. Navigate to
+the view switcher, select the view, and delete it.
+
+[navigate: ${LIBRARY}]
+
+[confirm: Delete the "Confidential Review" view from the view switcher]
+
+[new-chat]
